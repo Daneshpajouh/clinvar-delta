@@ -61,9 +61,9 @@ A verification run of v1.0.0 in a clean Linux container with Nextflow 25.04.6 st
 `Plugin nf-schema with version @2.8.0 does not exist in the repository`. Releases after
 2.5.1 are published only to the new Nextflow plugin registry, which 25.04 does not read;
 the development machine had 2.8.0 in its local plugin cache, so every local run passed.
-v1.0.1 pins 2.5.1, the newest release in the legacy `plugins.json`, whose own minimum is
-Nextflow 25.04.0. `scripts/test_linux.sh` now runs the test profiles from an empty plugin
-cache with Nextflow 25.04.0 and 26.10.2.
+The first fix pinned 2.5.1, the newest release in the legacy `plugins.json`, whose own
+minimum is Nextflow 25.04.0; section 10 replaced it before release. `scripts/test_linux.sh`
+runs the test profiles from an empty plugin cache with a given Nextflow release.
 
 ## 8. `onComplete:` section rejected by Nextflow 25.04 (v1.0.1)
 
@@ -78,3 +78,15 @@ object`), so all the work, including the final log line, is in the script functi
 With `procps` removed, every task fails with `Command 'ps' required by nextflow to collect
 task metrics cannot be found`. The tools image installs `procps`; the README lists it for
 runs without containers.
+
+## 10. Numeric options rejected by nf-schema 2.5.1 on Nextflow 26.10 (v1.0.1)
+
+With the 2.5.1 pin, `--max_cpus 8`, `--min_stars 1` and `--max_af 0.01` on Nextflow 26.10.2
+stopped with `Value is [string] but should be [integer]`; 2.5.1 has no lenient mode. Making
+the schema accept strings would have meant converting every numeric parameter by hand in
+the workflow. v1.0.1 instead returns to nf-schema 2.8.0, which reads these options as
+numbers, and raises the minimum to Nextflow 26.04.0: 2.8.0 is served only by the Nextflow
+plugin registry, which Nextflow reads from 25.10.0 ("Migrating to 25.10", Seqera Docs,
+docs.seqera.io/nextflow/migrations/25-10), and its own manifest declares
+`Plugin-Requires: >=26.04.0`. On 26.10.2 the three options pass, `--max_cpus abc` is still
+rejected as a string and `--max_cpus 0` as below the minimum of 1.

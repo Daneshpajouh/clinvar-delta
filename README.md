@@ -21,7 +21,7 @@ background for readers who do not work with ClinVar.
 
 ## Quick start
 
-Needs Nextflow 25.04.0 or newer and Java 17 or newer. Without containers, also these tools
+Needs Nextflow 26.04.0 or newer and Java 17 or newer. Without containers, also these tools
 on PATH: bcftools and tabix (checked with 1.16 on Debian 12 and 1.23 on macOS), Python
 3.11 or newer, and on Linux `procps`, because Nextflow runs `ps` in every task to record
 metrics and the task fails without it.

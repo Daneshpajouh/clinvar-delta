@@ -44,6 +44,6 @@ test:
 test-docker: image
 	nextflow run . -profile test,docker --outdir results_test_docker
 
-NXF_VER ?= 25.04.0
+NXF_VER ?= 26.04.0
 test-linux:
 	scripts/test_linux.sh $(NXF_VER)

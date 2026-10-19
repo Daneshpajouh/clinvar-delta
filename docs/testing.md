@@ -12,12 +12,12 @@ v1.0.1 is in [test_report.md](test_report.md).
 
 ## Portability check
 
-`scripts/test_linux.sh NXF_VER` (or `make test-linux NXF_VER=25.04.0`) builds a Debian 12
+`scripts/test_linux.sh NXF_VER` (or `make test-linux NXF_VER=26.04.0`) builds a Debian 12
 image with only Java 17, bcftools 1.16, tabix, procps and Python 3.11, installs the given
 Nextflow release, and runs the `test` and `test_diff` profiles from an empty plugin cache
 on the files git tracks. It catches what a developer machine hides: plugins served from a
 local cache, syntax newer than the declared minimum Nextflow, missing system tools. It is
-run for 25.04.0 (the declared minimum) and the current release.
+run for 26.04.0 (the declared minimum) and the current release.
 
 ## Unit and CLI layer
 

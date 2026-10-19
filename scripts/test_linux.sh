@@ -6,7 +6,7 @@
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
-	echo "Usage: $(basename "$0") NXF_VER   (for example 25.04.0)" >&2
+	echo "Usage: $(basename "$0") NXF_VER   (for example 26.04.0)" >&2
 	exit 2
 fi
 readonly nxf_ver=$1
