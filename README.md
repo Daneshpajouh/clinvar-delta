@@ -21,13 +21,15 @@ background for readers who do not work with ClinVar.
 
 ## Quick start (about 2 minutes)
 
-Needs Nextflow 25.04 or newer, Java 17+, and either Docker or local `bcftools` 1.23 and
-Python 3.11+.
+Needs Nextflow 25.04.0 or newer and Java 17 or newer, plus either Docker or these tools
+on PATH: bcftools and tabix (checked with 1.16 on Debian 12 and 1.23 on macOS), Python
+3.11 or newer, and on Linux `procps`, because Nextflow runs `ps` in every task to record
+metrics and the task fails without it.
 
 ```bash
 git clone https://github.com/Daneshpajouh/clinvar-variant-nf.git
 cd clinvar-variant-nf
-make image        # builds ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.0 locally
+make image        # builds ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.1 locally
 
 # Annotate two bundled samples: real HG002 records in BRCA1, BRCA2 and TP53, and one synthetic sample
 nextflow run . -profile test,docker --outdir results

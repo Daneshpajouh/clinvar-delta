@@ -69,13 +69,13 @@ Derived file: `reference/hg38_selected.fa.gz` (chr1 to chr22 and chrX concatenat
 
 ## Terms
 
-Checked at source on 2026-10-19 where the page could be read without JavaScript:
+Read at source on 2026-10-19:
 
 - UCSC hg38 chromosomes: the folder README says "All the files in this directory are freely available for public use."
 - NCBI (ClinVar, ACMG page): the NCBI policies page says NCBI "places no restrictions on the use or distribution of the data"; it also notes that some submitters may claim rights on their submissions.
-- GIAB (NIST): [CONFIRM] terms not checked at source for this release.
-- gnomAD v4.1: [CONFIRM] the policies page (gnomad.broadinstitute.org/policies) needs JavaScript and was not read.
-- Ensembl REST: [CONFIRM] the Ensembl disclaimer page did not show a data-use statement in plain HTML.
+- GIAB (NIST) on AWS: the registry entry (registry.opendata.aws/giab, managed by NIST) says "There are no restrictions on the use of this data."
+- gnomAD: primary data are released under CC0 1.0 (gnomad.broadinstitute.org/policies); some annotations bundled with gnomAD, such as SpliceAI scores, carry their own terms. Only AC, AN, AF, nhomalt and AF_grpmax are used here.
+- Ensembl: no restrictions on access to or use of its data; code under Apache 2.0; some third-party data distributed with Ensembl may carry their own constraints (mart.ensembl.org/info/about/legal/disclaimer.html). Only gene coordinates from the REST lookup are used here.
 
 The ClinVar release named in the brief as 2026-10-12 is file `clinvar_20261011.vcf.gz`
 (`##fileDate=2026-10-11`, server timestamp 2026-10-12 22:23 UTC). The older release is
