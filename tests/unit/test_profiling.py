@@ -97,3 +97,10 @@ def test_calibrated_config_from_recorded_trace() -> None:
     assert "memory = { 256.MB * task.attempt }" in config
     assert "time = { 10.min * task.attempt }" in config
     assert config.rstrip().endswith("}")
+
+
+def test_per_cpu_memory_request_counts_every_cpu() -> None:
+    # sacct from Slurm 20.11: 2000 MiB per CPU on 4 CPUs is an 8000 MiB request.
+    line = "2001|nf-BCFTOOLS_NORM_HG002|COMPLETED|0:0|00:10:00|01:00:00|4|00:30:00|2000Mc|"
+    (step,) = parse_sacct(line)
+    assert step.req_mem == 8000 * 1024**2

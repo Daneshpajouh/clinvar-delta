@@ -218,7 +218,10 @@ def slurm_seconds(value: str) -> float | None:
 
 
 def slurm_bytes(value: str) -> float | None:
-    """Parse Slurm memory such as '1234K', '4G' or older '4000Mn' / '2Gc' ReqMem forms."""
+    """Parse Slurm memory such as '1234K', '4G' or older '4000Mn' / '2Gc' ReqMem forms.
+
+    The per-node or per-CPU suffix is dropped here; slurm_req_mem applies it.
+    """
     value = value.strip()
     if not value:
         return None
@@ -227,6 +230,19 @@ def slurm_bytes(value: str) -> float | None:
         return None
     number, unit, _scope = match.groups()
     return float(number) * (_SLURM_UNITS[unit] if unit else 1)
+
+
+def slurm_req_mem(value: str, alloc_cpus: int) -> float | None:
+    """Requested memory for the whole allocation.
+
+    Slurm before 21.08 prints a per-CPU request as, for example, '2000Mc'; read alone it
+    understates the request by the CPU count. Jobs here run on one node, so the per-node
+    'n' form is already the total.
+    """
+    per_unit = slurm_bytes(value)
+    if per_unit is not None and value.strip().endswith("c") and alloc_cpus:
+        return per_unit * alloc_cpus
+    return per_unit
 
 
 @dataclass
@@ -259,6 +275,7 @@ def parse_sacct(text: str) -> list[SlurmStep]:
         if len(cols) != len(SACCT_FIELDS):
             raise ValueError(f"expected {len(SACCT_FIELDS)} fields, got {len(cols)}: {line!r}")
         rec = dict(zip(SACCT_FIELDS, cols, strict=True))
+        alloc_cpus = int(rec["AllocCPUS"] or 0)
         steps.append(
             SlurmStep(
                 job_id=rec["JobID"],
@@ -267,9 +284,9 @@ def parse_sacct(text: str) -> list[SlurmStep]:
                 exit_code=rec["ExitCode"],
                 elapsed=slurm_seconds(rec["Elapsed"]),
                 timelimit=slurm_seconds(rec["Timelimit"]),
-                alloc_cpus=int(rec["AllocCPUS"] or 0),
+                alloc_cpus=alloc_cpus,
                 total_cpu=slurm_seconds(rec["TotalCPU"]),
-                req_mem=slurm_bytes(rec["ReqMem"]),
+                req_mem=slurm_req_mem(rec["ReqMem"], alloc_cpus),
                 max_rss=slurm_bytes(rec["MaxRSS"]),
             )
         )
