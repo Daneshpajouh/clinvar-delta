@@ -1,0 +1,29 @@
+nextflow_process {
+    name "CVNF_CLINVAR_TABLE"
+    script "../../../modules/local/cvnf_clinvar_table/main.nf"
+    process "CVNF_CLINVAR_TABLE"
+
+    test("keeps the best-reviewed record for a duplicated allele") {
+        when {
+            process {
+                """
+                def tsv = file("${workDir}/query.tsv")
+                tsv.text = [
+                    "chr13\\t100\\tA\\tG\\t20\\tPathogenic\\tcriteria_provided,_single_submitter\\tBRCA2:675",
+                    "chr13\\t100\\tA\\tG\\t10\\tLikely_pathogenic\\treviewed_by_expert_panel\\tBRCA2:675",
+                    "chr13\\t200\\tC\\tT\\t30\\tBenign\\tcriteria_provided,_single_submitter\\tBRCA2:675",
+                ].join("\\n") + "\\n"
+                input[0] = tsv
+                """
+            }
+        }
+        then {
+            assert process.success
+            def lines = path(process.out.table[0][0]).readLines()
+            assert lines.size() == 2
+            assert lines[0].split("\\t")[4] == "10"
+            assert lines[0].split("\\t")[7] == "3"
+            assert snapshot(process.out.table).match()
+        }
+    }
+}

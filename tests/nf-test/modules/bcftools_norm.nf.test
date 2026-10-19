@@ -1,0 +1,33 @@
+nextflow_process {
+    name "BCFTOOLS_NORM"
+    script "../../../modules/local/bcftools_norm/main.nf"
+    process "BCFTOOLS_NORM"
+
+    test("splits the multiallelic record and left-aligns the shifted deletion") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'SYNTH01'],
+                    file("${projectDir}/tests/data/SYNTH01.vcf.gz"),
+                    file("${projectDir}/tests/data/SYNTH01.vcf.gz.tbi"),
+                ]
+                input[1] = [
+                    file("${projectDir}/tests/data/reference.fa.gz"),
+                    file("${projectDir}/tests/data/reference.fa.gz.fai"),
+                    file("${projectDir}/tests/data/reference.fa.gz.gzi"),
+                ]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def body = path(process.out.vcf[0][1]).linesGzip.findAll { line -> !line.startsWith('#') }
+            def records = body.collect { line -> def c = line.split("\t"); c[1] + ":" + c[3] + ">" + c[4] }
+            assert records.contains("32316463:GC>G")
+            assert !records.contains("32316464:CC>C")
+            assert records.count { r -> r.startsWith("32316462:") } == 2
+            assert snapshot(records).match()
+        }
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "keeps the best-reviewed record for a duplicated allele": {
+        "content": [
+            [
+                [
+                    "clinvar.annotation.tsv:md5,915de8eb8f88a5f23da03b12cd411aa0",
+                    "clinvar.header.txt:md5,323a456836f7c78d66a4a2af5a56ce32"
+                ]
+            ]
+        ],
+        "timestamp": "2026-10-19T11:44:19.693739",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}

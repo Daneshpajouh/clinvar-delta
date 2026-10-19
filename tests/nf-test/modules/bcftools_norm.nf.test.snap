@@ -1,0 +1,21 @@
+{
+    "splits the multiallelic record and left-aligns the shifted deletion": {
+        "content": [
+            [
+                "32315668:G>A",
+                "32316420:A>G",
+                "32316421:G>A",
+                "32316421:G>C",
+                "32316462:T>A",
+                "32316462:T>C",
+                "32316463:GC>G",
+                "32338295:A>T"
+            ]
+        ],
+        "timestamp": "2026-10-19T11:45:23.536151",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}

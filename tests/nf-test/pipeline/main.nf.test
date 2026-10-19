@@ -1,0 +1,32 @@
+nextflow_pipeline {
+    name "clinvar-variant-nf test profile"
+    script "../../../main.nf"
+
+    test("annotate mode reports the synthetic sample") {
+        when {
+            params {
+                // nf-schema resolves relative samplesheet paths from the launch directory,
+                // which nf-test moves, so the test writes absolute paths.
+                def data = "${baseDir}/tests/data"
+                def sheet = new File("${outputDir}/samplesheet.csv")
+                sheet.parentFile.mkdirs()
+                sheet.text = "sample,vcf,tbi\n" +
+                    "HG002,${data}/HG002.subset.vcf.gz,${data}/HG002.subset.vcf.gz.tbi\n" +
+                    "SYNTH01,${data}/SYNTH01.vcf.gz,${data}/SYNTH01.vcf.gz.tbi\n"
+                input = sheet.toString()
+                outdir = "${outputDir}/results"
+            }
+        }
+        then {
+            assert workflow.success
+            def report = path("${outputDir}/results/report/SYNTH01.report.json").json
+            assert report.reportable == 6
+            assert report.plp_any_review == 8
+            assert path("${outputDir}/results/report/HG002.report.json").json.plp_any_review == 0
+            assert snapshot(
+                path("${outputDir}/results/report/SYNTH01.gene_summary.tsv"),
+                path("${outputDir}/results/report/HG002.gene_summary.tsv"),
+            ).match()
+        }
+    }
+}

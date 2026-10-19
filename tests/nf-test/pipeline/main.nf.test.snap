@@ -1,0 +1,13 @@
+{
+    "annotate mode reports the synthetic sample": {
+        "content": [
+            "SYNTH01.gene_summary.tsv:md5,b8f895780a4db087fe15abc5934cfddd",
+            "HG002.gene_summary.tsv:md5,90deff664b6ef572c81c30001a2d782f"
+        ],
+        "timestamp": "2026-10-19T11:45:11.101267",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}
