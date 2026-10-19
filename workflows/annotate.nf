@@ -32,8 +32,11 @@ workflow ANNOTATE {
     CLINVAR_PREPARE(clinvar, fasta, regions)
     CVNF_CLINVAR_TABLE(CLINVAR_PREPARE.out.tsv)
     TABIX_CLINVAR(CVNF_CLINVAR_TABLE.out.table.map { table, _header -> [table, 'tab'] })
+    // combine() returns a queue channel even for single-value inputs; first() turns it back
+    // into a value channel so every sample is annotated (without it only one sample ran).
     clinvar_annotation = TABIX_CLINVAR.out.indexed
         .combine(CVNF_CLINVAR_TABLE.out.table.map { _table, header -> header })
+        .first()
 
     if (params.prefilter_panel) {
         BCFTOOLS_PREFILTER(validated, CVNF_PANEL_PAD.out.bed)
