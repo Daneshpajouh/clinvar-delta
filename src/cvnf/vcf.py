@@ -14,7 +14,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TextIO
+from typing import TextIO, cast
 
 
 @contextmanager
@@ -26,10 +26,10 @@ def open_text(path: str | Path, mode: str = "r") -> Iterator[TextIO]:
         return
     if name.endswith((".gz", ".bgz")):
         with gzip.open(name, mode + "t", encoding="utf-8", newline="") as handle:
-            yield handle
+            yield cast(TextIO, handle)
         return
     with open(name, mode, encoding="utf-8", newline="") as handle:
-        yield handle
+        yield cast(TextIO, handle)
 
 
 def parse_info(info: str) -> dict[str, str]:

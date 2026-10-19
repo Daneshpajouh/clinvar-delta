@@ -60,8 +60,9 @@ def parse_entries(lines: Iterable[str]) -> Iterator[Entry]:
         if vid < last:
             raise ValueError(f"input not sorted by Variation ID at {vid} after {last}")
         last = vid
-        yield Entry(vid, cols[1], cols[2], cols[3], cols[4], cols[5], cols[6],
-                    tuple(gene_symbols(cols[7])))
+        yield Entry(
+            vid, cols[1], cols[2], cols[3], cols[4], cols[5], cols[6], tuple(gene_symbols(cols[7]))
+        )
 
 
 # Assertion changes come from submitters or expert panels and can change what a patient
@@ -90,7 +91,9 @@ def classify_change(old: Entry | None, new: Entry | None) -> str:
     return "unchanged"
 
 
-def merge_join(old: Iterable[Entry], new: Iterable[Entry]) -> Iterator[tuple[Entry | None, Entry | None]]:
+def merge_join(
+    old: Iterable[Entry], new: Iterable[Entry]
+) -> Iterator[tuple[Entry | None, Entry | None]]:
     old_it, new_it = iter(old), iter(new)
     o = next(old_it, None)
     n = next(new_it, None)
@@ -117,18 +120,37 @@ class DiffStats:
     plp_lost_by_gene: Counter[str] = field(default_factory=Counter)
 
     def as_dict(self, top: int = 25) -> dict[str, object]:
+        """JSON-ready summary; gene lists are ordered by count, then symbol."""
+
+        def ranked(counter: Counter[str]) -> list[tuple[str, int]]:
+            return sorted(counter.items(), key=lambda kv: (-kv[1], kv[0]))[:top]
+
         return {
             "changes": dict(sorted(self.changes.items())),
+            "assertion_changes": sum(self.changes[c] for c in ASSERTION_CHANGES),
+            "annotation_changes": sum(self.changes[c] for c in ANNOTATION_CHANGES),
             "transitions": [
                 {"old": o, "new": n, "count": c}
-                for (o, n), c in sorted(self.transitions.items(), key=lambda kv: -kv[1])
+                for (o, n), c in sorted(self.transitions.items(), key=lambda kv: (-kv[1], kv[0]))
             ],
             "reclassified_by_new_stars": {
                 str(k): v for k, v in sorted(self.reclassified_by_new_stars.items())
             },
-            "reclassified_by_gene_top": dict(self.reclassified_by_gene.most_common(top)),
-            "plp_gained_by_gene_top": dict(self.plp_gained_by_gene.most_common(top)),
-            "plp_lost_by_gene_top": dict(self.plp_lost_by_gene.most_common(top)),
+            "top_genes": [
+                {
+                    "gene": gene,
+                    "reclassified": count,
+                    "became_plp": self.plp_gained_by_gene[gene],
+                    "left_plp": self.plp_lost_by_gene[gene],
+                }
+                for gene, count in ranked(self.reclassified_by_gene)
+            ],
+            "top_genes_became_plp": [
+                {"gene": g, "count": c} for g, c in ranked(self.plp_gained_by_gene)
+            ],
+            "top_genes_left_plp": [
+                {"gene": g, "count": c} for g, c in ranked(self.plp_lost_by_gene)
+            ],
         }
 
 

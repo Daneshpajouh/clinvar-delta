@@ -24,7 +24,14 @@ from cvnf.annotate import (
     to_json,
     write_table,
 )
-from cvnf.diff import CHANGE_COLUMNS, DiffStats, accumulate, change_row, diff_releases, parse_entries
+from cvnf.diff import (
+    CHANGE_COLUMNS,
+    DiffStats,
+    accumulate,
+    change_row,
+    diff_releases,
+    parse_entries,
+)
 from cvnf.panel import acmg_symbols, lookup_to_bed, pad_bed, read_lookup, request_body
 from cvnf.profiling import (
     fmt_bytes,
@@ -178,8 +185,18 @@ def cmd_report(args: argparse.Namespace) -> int:
     stars = stars_breakdown(rows)
     reportable = [r for r in rows if r["reportable"] == "yes"]
     plp_all = [r for r in rows if r["group"] == "PLP"]
-    keys = ["gene", "variants", "vus", "plp", "plp_stars_0", "plp_stars_1", "plp_stars_2",
-            "plp_stars_3", "plp_stars_4", "reportable"]
+    keys = [
+        "gene",
+        "variants",
+        "vus",
+        "plp",
+        "plp_stars_0",
+        "plp_stars_1",
+        "plp_stars_2",
+        "plp_stars_3",
+        "plp_stars_4",
+        "reportable",
+    ]
     with open_text(args.summary, "w") as dst:
         dst.write("\t".join(keys) + "\n")
         for item in summary:
@@ -194,8 +211,18 @@ def cmd_report(args: argparse.Namespace) -> int:
         **stars,
     }
     write_text(args.json, to_json(stats))
-    rep_cols = ["panel_gene", "chrom", "pos", "ref", "alt", "gt", "clnsig", "stars", "gnomad_af",
-                "clinvar_id"]
+    rep_cols = [
+        "panel_gene",
+        "chrom",
+        "pos",
+        "ref",
+        "alt",
+        "gt",
+        "clnsig",
+        "stars",
+        "gnomad_af",
+        "clinvar_id",
+    ]
     plp_cols = [*rep_cols, "reason"]
     md, page = render(
         f"ClinVar panel report: {args.sample}",
@@ -207,16 +234,32 @@ def cmd_report(args: argparse.Namespace) -> int:
             "carrying the alternate allele. This is a research summary, not a clinical report.",
         ],
         [
-            ("Reportable variants", [] if reportable else ["None at these thresholds."],
-             (rep_cols, [[r[c] for c in rep_cols] for r in reportable]) if reportable else None),
-            ("All ClinVar P/LP variants in the panel", [],
-             (plp_cols, [[r[c] for c in plp_cols] for r in plp_all]) if plp_all else None),
-            ("P/LP variants by review stars", [],
-             (["stars", "P/LP (any)", "reportable"],
-              [[s, stars["plp_by_stars"][s], stars["reportable_by_stars"][s]]
-               for s in ["0", "1", "2", "3", "4"]])),
-            ("Per-gene summary (genes with variants)", [],
-             (keys, [[item[k] for k in keys] for item in summary if item["variants"]])),
+            (
+                "Reportable variants",
+                [] if reportable else ["None at these thresholds."],
+                (rep_cols, [[r[c] for c in rep_cols] for r in reportable]) if reportable else None,
+            ),
+            (
+                "All ClinVar P/LP variants in the panel",
+                [],
+                (plp_cols, [[r[c] for c in plp_cols] for r in plp_all]) if plp_all else None,
+            ),
+            (
+                "P/LP variants by review stars",
+                [],
+                (
+                    ["stars", "P/LP (any)", "reportable"],
+                    [
+                        [s, stars["plp_by_stars"][s], stars["reportable_by_stars"][s]]
+                        for s in ["0", "1", "2", "3", "4"]
+                    ],
+                ),
+            ),
+            (
+                "Per-gene summary (genes with variants)",
+                [],
+                (keys, [[item[k] for k in keys] for item in summary if item["variants"]]),
+            ),
         ],
     )
     write_text(args.markdown, md)
@@ -234,10 +277,14 @@ def cmd_diff(args: argparse.Namespace) -> int:
             accumulate(stats, change, o, n)
             if change != "unchanged":
                 dst.write(change_row(change, o, n) + "\n")
-    data = {"old": args.old_label, "new": args.new_label,
-            "gene_filter": len(genes) if genes else None, **stats.as_dict()}
+    data = {
+        "old": args.old_label,
+        "new": args.new_label,
+        "gene_filter": len(genes) if genes else None,
+        **stats.as_dict(),
+    }
     write_text(args.json, to_json(data))
-    info("diff", **{k: v for k, v in stats.changes.items()})
+    info("diff", **dict(stats.changes))
     return 0
 
 
@@ -250,23 +297,67 @@ def cmd_diff_report(args: argparse.Namespace) -> int:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
         intro = [f"ClinVar {data['old']} compared with {data['new']}, matched on Variation ID."]
         changes = data["changes"]
-        sections.append((f"{label}: changes", [
-            "Assertion changes (reclassified, review_changed, term_changed) come from "
-            "submitters or expert panels. annotation_only means ClinVar changed the "
-            "location, allele, gene or status wording while the classification and stars "
-            "stayed the same."], (["change", "variation IDs"], [[k, v] for k, v in changes.items()])))
-        sections.append((f"{label}: reclassifications between groups", [],
-                         (["old group", "new group", "count"],
-                          [[t["old"], t["new"], t["count"]] for t in data["transitions"]])))
-        sections.append((f"{label}: reclassified, by review stars in the new release", [],
-                         (["stars", "count"],
-                          [[k, v] for k, v in data["reclassified_by_new_stars"].items()])))
-        sections.append((f"{label}: genes with most reclassifications", [],
-                         (["gene", "reclassified", "became P/LP", "left P/LP"],
-                          [[g, n, data["plp_gained_by_gene_top"].get(g, 0),
-                            data["plp_lost_by_gene_top"].get(g, 0)]
-                           for g, n in sorted(data["reclassified_by_gene_top"].items(),
-                                              key=lambda kv: (-kv[1], kv[0]))])))
+        sections.append(
+            (
+                f"{label}: changes",
+                [
+                    "Assertion changes (reclassified, review_changed, term_changed) come from "
+                    "submitters or expert panels. annotation_only means ClinVar changed the "
+                    "location, allele, gene or status wording while the classification and stars "
+                    "stayed the same."
+                ],
+                (["change", "variation IDs"], [[k, v] for k, v in changes.items()]),
+            )
+        )
+        sections.append(
+            (
+                f"{label}: reclassifications between groups",
+                [],
+                (
+                    ["old group", "new group", "count"],
+                    [[t["old"], t["new"], t["count"]] for t in data["transitions"]],
+                ),
+            )
+        )
+        sections.append(
+            (
+                f"{label}: reclassified, by review stars in the new release",
+                [],
+                (
+                    ["stars", "count"],
+                    [[k, v] for k, v in data["reclassified_by_new_stars"].items()],
+                ),
+            )
+        )
+        sections.append(
+            (
+                f"{label}: genes with most reclassifications",
+                ["A variant listed under two genes counts once for each."],
+                (
+                    ["gene", "reclassified", "became P/LP", "left P/LP"],
+                    [
+                        [g["gene"], g["reclassified"], g["became_plp"], g["left_plp"]]
+                        for g in data["top_genes"]
+                    ],
+                ),
+            )
+        )
+        sections.append(
+            (
+                f"{label}: assertion versus annotation changes",
+                [],
+                (
+                    ["kind", "variation IDs"],
+                    [
+                        [
+                            "assertion (reclassified, review_changed, term_changed)",
+                            data["assertion_changes"],
+                        ],
+                        ["annotation only", data["annotation_changes"]],
+                    ],
+                ),
+            )
+        )
     md, page = render("ClinVar release comparison", intro, sections)
     write_text(args.markdown, md)
     write_text(args.html, page)
@@ -306,20 +397,42 @@ def cmd_profile_usage(args: argparse.Namespace) -> int:
     with open_text(args.trace) as handle:
         tasks = read_trace(handle)
     summary = summarise(tasks)
-    header = ["process", "tasks", "cpus req", "CPU eff", "mem req", "peak RSS", "mem used",
-              "time req", "max realtime", "time used", "flags"]
+    header = [
+        "process",
+        "tasks",
+        "cpus req",
+        "CPU eff",
+        "mem req",
+        "peak RSS",
+        "mem used",
+        "time req",
+        "max realtime",
+        "time used",
+        "flags",
+    ]
     rows: list[list[object]] = [
-        [s.process, s.tasks, s.cpus_requested or "-", fmt_pct(s.cpu_efficiency),
-         fmt_bytes(s.memory_requested), fmt_bytes(s.peak_rss_max), fmt_pct(s.memory_used_fraction),
-         fmt_secs(s.time_requested), fmt_secs(s.realtime_max), fmt_pct(s.time_used_fraction),
-         ", ".join(s.flags) or "-"]
+        [
+            s.process,
+            s.tasks,
+            s.cpus_requested or "-",
+            fmt_pct(s.cpu_efficiency),
+            fmt_bytes(s.memory_requested),
+            fmt_bytes(s.peak_rss_max),
+            fmt_pct(s.memory_used_fraction),
+            fmt_secs(s.time_requested),
+            fmt_secs(s.realtime_max),
+            fmt_pct(s.time_used_fraction),
+            ", ".join(s.flags) or "-",
+        ]
         for s in summary
     ]
     md, page = render(
         "Requested versus used resources",
-        [f"Trace: {Path(args.trace).name}. {len(tasks)} tasks in {len(summary)} processes.",
-         "mem used = peak RSS of the largest task / requested memory; time used = longest "
-         "realtime / requested time; CPU eff = %cpu / (100 x cpus), averaged over tasks."],
+        [
+            f"Trace: {Path(args.trace).name}. {len(tasks)} tasks in {len(summary)} processes.",
+            "mem used = peak RSS of the largest task / requested memory; time used = longest "
+            "realtime / requested time; CPU eff = %cpu / (100 x cpus), averaged over tasks.",
+        ],
         [("Per process", [], (header, rows))],
     )
     write_text(args.markdown, md)

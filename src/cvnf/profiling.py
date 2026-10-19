@@ -105,7 +105,9 @@ def _ratio(used: float | None, requested: float | None) -> float | None:
     return used / requested
 
 
-def summarise(tasks: Iterable[TaskUsage], waste_below: float = 0.25, near_above: float = 0.9) -> list[ProcessSummary]:
+def summarise(
+    tasks: Iterable[TaskUsage], waste_below: float = 0.25, near_above: float = 0.9
+) -> list[ProcessSummary]:
     """Summarise tasks per process.
 
     Flags: 'memory waste' when the largest task used less than `waste_below` of its
@@ -144,8 +146,21 @@ def summarise(tasks: Iterable[TaskUsage], waste_below: float = 0.25, near_above:
         if retried:
             flags.append(f"{retried} retried")
         out.append(
-            ProcessSummary(process, len(items), failed, retried, cpus, cpu_eff, mem_req, rss,
-                           mem_frac, time_req, real, time_frac, flags)
+            ProcessSummary(
+                process,
+                len(items),
+                failed,
+                retried,
+                cpus,
+                cpu_eff,
+                mem_req,
+                rss,
+                mem_frac,
+                time_req,
+                real,
+                time_frac,
+                flags,
+            )
         )
     return out
 
@@ -170,8 +185,16 @@ def fmt_secs(value: float | None) -> str:
 # --- Slurm -----------------------------------------------------------------------------
 
 SACCT_FIELDS = (
-    "JobID", "JobName", "State", "ExitCode", "Elapsed", "Timelimit",
-    "AllocCPUS", "TotalCPU", "ReqMem", "MaxRSS",
+    "JobID",
+    "JobName",
+    "State",
+    "ExitCode",
+    "Elapsed",
+    "Timelimit",
+    "AllocCPUS",
+    "TotalCPU",
+    "ReqMem",
+    "MaxRSS",
 )
 
 
@@ -255,13 +278,27 @@ def slurm_job_rows(steps: list[SlurmStep]) -> list[dict[str, str]]:
     jobs: dict[str, dict[str, object]] = {}
     for step in steps:
         base = step.job_id.split(".")[0]
-        job = jobs.setdefault(base, {"job": base, "name": step.name, "state": step.state,
-                                     "elapsed": step.elapsed, "timelimit": step.timelimit,
-                                     "req_mem": step.req_mem, "max_rss": None,
-                                     "cpu_eff": step.cpu_efficiency})
+        job = jobs.setdefault(
+            base,
+            {
+                "job": base,
+                "name": step.name,
+                "state": step.state,
+                "elapsed": step.elapsed,
+                "timelimit": step.timelimit,
+                "req_mem": step.req_mem,
+                "max_rss": None,
+                "cpu_eff": step.cpu_efficiency,
+            },
+        )
         if "." not in step.job_id:
-            job.update(name=step.name, state=step.state, elapsed=step.elapsed,
-                       timelimit=step.timelimit, req_mem=step.req_mem)
+            job.update(
+                name=step.name,
+                state=step.state,
+                elapsed=step.elapsed,
+                timelimit=step.timelimit,
+                req_mem=step.req_mem,
+            )
         if step.max_rss is not None:
             prev = job["max_rss"]
             job["max_rss"] = step.max_rss if prev is None else max(float(str(prev)), step.max_rss)
@@ -279,10 +316,17 @@ def slurm_job_rows(steps: list[SlurmStep]) -> list[dict[str, str]]:
             flags.append(str(job["state"]).lower())
         if mem_frac is not None and mem_frac < 0.25:
             flags.append("memory waste")
-        rows.append({
-            "job": str(job["job"]), "name": str(job["name"]), "state": str(job["state"]),
-            "memory_used": fmt_pct(mem_frac), "time_used": fmt_pct(time_frac),
-            "cpu_efficiency": fmt_pct(job["cpu_eff"] if isinstance(job["cpu_eff"], float) else None),
-            "flags": ", ".join(flags) or "-",
-        })
+        rows.append(
+            {
+                "job": str(job["job"]),
+                "name": str(job["name"]),
+                "state": str(job["state"]),
+                "memory_used": fmt_pct(mem_frac),
+                "time_used": fmt_pct(time_frac),
+                "cpu_efficiency": fmt_pct(
+                    job["cpu_eff"] if isinstance(job["cpu_eff"], float) else None
+                ),
+                "flags": ", ".join(flags) or "-",
+            }
+        )
     return rows

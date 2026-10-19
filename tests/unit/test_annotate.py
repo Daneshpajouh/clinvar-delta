@@ -1,0 +1,76 @@
+from cvnf.annotate import FilterParams, clinvar_table, evaluate, gene_summary, stars_breakdown
+from cvnf.vcf import VcfRecord
+
+EXPERT = "reviewed_by_expert_panel"
+SINGLE = "criteria_provided,_single_submitter"
+
+
+def test_clinvar_table_keeps_best_reviewed_duplicate_and_drops_missing_alt() -> None:
+    rows = [
+        f"chr1\t100\tA\tG\t20\tPathogenic\t{SINGLE}\tG1:1\n",
+        f"chr1\t100\tA\tG\t10\tLikely_pathogenic\t{EXPERT}\tG1:1\n",
+        f"chr1\t100\tA\t.\t30\tPathogenic\t{SINGLE}\tG1:1\n",
+        f"chr1\t200\tC\tT\t40\tBenign\t{SINGLE}\tG1:1\n",
+    ]
+    out = list(clinvar_table(rows))
+    assert len(out) == 2
+    assert out[0].split("\t")[4] == "10"
+    assert out[0].split("\t")[7:9] == ["3", "PLP"]
+    assert out[1].split("\t")[8] == "BLB"
+
+
+def test_clinvar_table_is_deterministic_for_equal_stars() -> None:
+    rows = [
+        f"chr1\t100\tA\tG\t20\tPathogenic\t{SINGLE}\tG1:1\n",
+        f"chr1\t100\tA\tG\t15\tPathogenic\t{SINGLE}\tG1:1\n",
+    ]
+    assert next(iter(clinvar_table(rows))).split("\t")[4] == "15"
+    assert next(iter(clinvar_table(reversed(rows)))).split("\t")[4] == "15"
+
+
+def record(info: dict[str, str], gt: str = "0/1") -> VcfRecord:
+    return VcfRecord("chr13", 1000, ".", "A", "G", "50", "PASS", info, {"GT": gt})
+
+
+BASE = {"PANEL_GENE": "BRCA2", "CLNSIG": "Pathogenic", "CLNSTARS": "2", "CLNVID": "5"}
+
+
+def test_evaluate_reportable() -> None:
+    row = evaluate(record(BASE), "S1", FilterParams())
+    assert row is not None
+    assert row.reportable
+    assert row.gnomad_af is None
+
+
+def test_evaluate_outside_panel_returns_none() -> None:
+    assert evaluate(record({"CLNSIG": "Pathogenic"}), "S1", FilterParams()) is None
+
+
+def test_evaluate_reasons() -> None:
+    params = FilterParams(min_stars=2, max_af=0.01)
+    low = evaluate(record({**BASE, "CLNSTARS": "1"}), "S1", params)
+    common = evaluate(record({**BASE, "gnomAD_AF": "0.2"}), "S1", params)
+    hom_ref = evaluate(record(BASE, gt="0/0"), "S1", params)
+    assert low is not None
+    assert low.reason == "stars 1 < 2"
+    assert common is not None
+    assert common.reason.startswith("gnomAD AF 0.2")
+    assert hom_ref is not None
+    assert hom_ref.reason == "genotype has no ALT allele"
+
+
+def test_evaluate_low_penetrance_switch() -> None:
+    info = {**BASE, "CLNSIG": "Pathogenic,_low_penetrance"}
+    assert evaluate(record(info), "S1", FilterParams()).reportable  # type: ignore[union-attr]
+    excluded = evaluate(record(info), "S1", FilterParams(include_low_penetrance=False))
+    assert excluded is not None
+    assert not excluded.reportable
+
+
+def test_gene_summary_lists_every_panel_gene() -> None:
+    rows = [{"panel_gene": "BRCA2", "group": "PLP", "stars": "2", "reportable": "yes"}]
+    summary = gene_summary(rows, ["BRCA1", "BRCA2"])
+    assert [s["gene"] for s in summary] == ["BRCA1", "BRCA2"]
+    assert summary[0]["variants"] == 0
+    assert summary[1]["plp_stars_2"] == 1
+    assert stars_breakdown(rows)["reportable_by_stars"]["2"] == 1

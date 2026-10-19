@@ -8,14 +8,14 @@ from collections.abc import Iterable, Iterator
 from dataclasses import asdict, dataclass
 from typing import TextIO
 
-from cvnf.clinvar import Group, classify, gene_symbols, review_stars
+from cvnf.clinvar import Group, classify, review_stars
 from cvnf.vcf import VcfRecord, carries_alt
 
 CLINVAR_HEADER = """\
 ##INFO=<ID=CLNVID,Number=1,Type=Integer,Description="ClinVar Variation ID">
 ##INFO=<ID=CLNSIG,Number=.,Type=String,Description="ClinVar aggregate germline classification">
 ##INFO=<ID=CLNREVSTAT,Number=.,Type=String,Description="ClinVar review status">
-##INFO=<ID=CLNSTARS,Number=1,Type=Integer,Description="Review stars (0 to 4) derived from CLNREVSTAT">
+##INFO=<ID=CLNSTARS,Number=1,Type=Integer,Description="Review stars (0 to 4) from CLNREVSTAT">
 ##INFO=<ID=CLNGROUP,Number=1,Type=String,Description="Classification group derived from CLNSIG">
 ##INFO=<ID=CLNGENE,Number=1,Type=String,Description="ClinVar GENEINFO">
 """

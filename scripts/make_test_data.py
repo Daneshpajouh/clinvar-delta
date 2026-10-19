@@ -17,8 +17,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-GENES = [("chr13", 32315085, 32400268, "BRCA2"), ("chr17", 7661778, 7687546, "TP53"),
-         ("chr17", 43044291, 43170245, "BRCA1")]
+GENES = [
+    ("chr13", 32315085, 32400268, "BRCA2"),
+    ("chr17", 7661778, 7687546, "TP53"),
+    ("chr17", 43044291, 43170245, "BRCA1"),
+]
 PAD = 2000
 WRAP = 60
 
@@ -35,8 +38,12 @@ def windows() -> list[tuple[str, int, int]]:
 def subset_vcf(src: Path, dest: Path, regions: str, extra: list[str] | None = None) -> None:
     cmd = ["bcftools", "view", "--no-version", "-r", regions, "-Oz", "-o", str(dest), str(src)]
     if extra:
-        cmd = ["bash", "-c", f"bcftools view --no-version -r {regions} -Ou {src} | "
-               f"bcftools annotate --no-version {' '.join(extra)} -Oz -o {dest}"]
+        cmd = [
+            "bash",
+            "-c",
+            f"bcftools view --no-version -r {regions} -Ou {src} | "
+            f"bcftools annotate --no-version {' '.join(extra)} -Oz -o {dest}",
+        ]
     run(cmd)
     run(["bcftools", "index", "-t", "-f", str(dest)])
 
@@ -64,27 +71,44 @@ def masked_reference(fasta: Path, dest: Path) -> None:
 
 
 def clinvar_rows(vcf: Path) -> list[list[str]]:
-    out = run(["bcftools", "query", "-f",
-               "%CHROM\t%POS\t%ID\t%REF\t%ALT\t%INFO/CLNSIG\t%INFO/CLNREVSTAT\t%INFO/GENEINFO\n",
-               str(vcf)])
+    out = run(
+        [
+            "bcftools",
+            "query",
+            "-f",
+            "%CHROM\t%POS\t%ID\t%REF\t%ALT\t%INFO/CLNSIG\t%INFO/CLNREVSTAT\t%INFO/GENEINFO\n",
+            str(vcf),
+        ]
+    )
     return [line.split("\t") for line in out.splitlines()]
 
 
 def ref_base(fasta: Path, chrom: str, start: int, end: int) -> str:
-    return "".join(run(["samtools", "faidx", str(fasta), f"{chrom}:{start}-{end}"]).splitlines()[1:]).upper()
+    return "".join(
+        run(["samtools", "faidx", str(fasta), f"{chrom}:{start}-{end}"]).splitlines()[1:]
+    ).upper()
 
 
 def synthetic_sample(clinvar: Path, fasta: Path, dest: Path) -> list[str]:
     rows = clinvar_rows(clinvar)
-    plp = [r for r in rows if r[5] in {"Pathogenic", "Likely_pathogenic", "Pathogenic/Likely_pathogenic"}]
+    plp = [
+        r
+        for r in rows
+        if r[5] in {"Pathogenic", "Likely_pathogenic", "Pathogenic/Likely_pathogenic"}
+    ]
     picked: list[tuple[str, int, str, str, str, str]] = []
     notes = []
 
     def snv(r: list[str]) -> bool:
         return len(r[3]) == 1 and len(r[4]) == 1
 
-    starred = [r for r in plp if snv(r) and r[6] in {
-        "criteria_provided,_multiple_submitters,_no_conflicts", "reviewed_by_expert_panel"}]
+    starred = [
+        r
+        for r in plp
+        if snv(r)
+        and r[6]
+        in {"criteria_provided,_multiple_submitters,_no_conflicts", "reviewed_by_expert_panel"}
+    ]
     for r in starred[:3]:
         picked.append((f"chr{r[0]}", int(r[1]), r[3], r[4], "0/1", f"ClinVar {r[2]} {r[5]}"))
         notes.append(f"chr{r[0]}:{r[1]} {r[3]}>{r[4]} ClinVar {r[2]}, P/LP with 2+ stars, GT 0/1")
@@ -96,23 +120,38 @@ def synthetic_sample(clinvar: Path, fasta: Path, dest: Path) -> list[str]:
     notes.append(f"chr{hom_ref[0]}:{hom_ref[1]} ClinVar {hom_ref[2]}, P/LP but GT 0/0")
     multi = starred[4]
     other = next(b for b in "ACGT" if b not in {multi[3], multi[4]})
-    picked.append((f"chr{multi[0]}", int(multi[1]), multi[3], f"{multi[4]},{other}", "1/2", "multiallelic"))
-    notes.append(f"chr{multi[0]}:{multi[1]} multiallelic {multi[3]}>{multi[4]},{other} (ClinVar {multi[2]} "
-                 "plus a made-up second ALT), GT 1/2")
+    picked.append(
+        (f"chr{multi[0]}", int(multi[1]), multi[3], f"{multi[4]},{other}", "1/2", "multiallelic")
+    )
+    notes.append(
+        f"chr{multi[0]}:{multi[1]} multiallelic {multi[3]}>{multi[4]},{other} (ClinVar {multi[2]} "
+        "plus a made-up second ALT), GT 1/2"
+    )
     # A one-base deletion inside a homopolymer, written one base to the right of where
     # ClinVar (left-aligned) puts it; bcftools norm must move it back to match.
     for r in plp:
-        if len(r[3]) != 2 or len(r[4]) != 1 or r[6] not in {
-                "criteria_provided,_multiple_submitters,_no_conflicts", "reviewed_by_expert_panel",
-                "criteria_provided,_single_submitter"}:
+        if (
+            len(r[3]) != 2
+            or len(r[4]) != 1
+            or r[6]
+            not in {
+                "criteria_provided,_multiple_submitters,_no_conflicts",
+                "reviewed_by_expert_panel",
+                "criteria_provided,_single_submitter",
+            }
+        ):
             continue
         pos = int(r[1])
         context = ref_base(fasta, f"chr{r[0]}", pos, pos + 3)
         if context[1] == context[2]:
             shifted_ref = context[1:3]
-            picked.append((f"chr{r[0]}", pos + 1, shifted_ref, context[1], "0/1", "right-shifted deletion"))
-            notes.append(f"chr{r[0]}:{pos + 1} {shifted_ref}>{context[1]} is ClinVar {r[2]} "
-                         f"({r[0]}:{pos} {r[3]}>{r[4]}) shifted right by one base")
+            picked.append(
+                (f"chr{r[0]}", pos + 1, shifted_ref, context[1], "0/1", "right-shifted deletion")
+            )
+            notes.append(
+                f"chr{r[0]}:{pos + 1} {shifted_ref}>{context[1]} is ClinVar {r[2]} "
+                f"({r[0]}:{pos} {r[3]}>{r[4]}) shifted right by one base"
+            )
             break
     picked.sort(key=lambda p: (int(p[0][3:]), p[1]))
     header = [
@@ -136,13 +175,23 @@ def main(data_dir: Path, out: Path) -> None:
     regions_chr = ",".join(f"{c}:{s}-{e}" for c, s, e in windows())
     regions_bare = ",".join(f"{c[3:]}:{s}-{e}" for c, s, e in windows())
     keep = ["-x", "'^INFO/CLNSIG,INFO/CLNREVSTAT,INFO/GENEINFO,INFO/ALLELEID'"]
-    subset_vcf(data_dir / "giab/HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz",
-               out / "HG002.subset.vcf.gz", regions_chr)
+    subset_vcf(
+        data_dir / "giab/HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz",
+        out / "HG002.subset.vcf.gz",
+        regions_chr,
+    )
     for release in ("clinvar_20251013", "clinvar_20261011"):
-        subset_vcf(data_dir / f"clinvar/{release}.vcf.gz", out / f"{release}.subset.vcf.gz",
-                   regions_bare, keep)
-    subset_vcf(data_dir / "gnomad/gnomad.genomes.v4.1.acmg_sf_panel.vcf.gz",
-               out / "gnomad.subset.vcf.gz", regions_chr)
+        subset_vcf(
+            data_dir / f"clinvar/{release}.vcf.gz",
+            out / f"{release}.subset.vcf.gz",
+            regions_bare,
+            keep,
+        )
+    subset_vcf(
+        data_dir / "gnomad/gnomad.genomes.v4.1.acmg_sf_panel.vcf.gz",
+        out / "gnomad.subset.vcf.gz",
+        regions_chr,
+    )
     fasta = data_dir / "reference/hg38_selected.fa.gz"
     masked_reference(fasta, out / "reference.fa.gz")
     notes = synthetic_sample(out / "clinvar_20261011.subset.vcf.gz", fasta, out / "SYNTH01.vcf.gz")
