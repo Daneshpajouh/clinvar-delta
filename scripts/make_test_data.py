@@ -123,9 +123,19 @@ def synthetic_sample(clinvar: Path, fasta: Path, dest: Path) -> list[str]:
     picked.append(
         (f"chr{multi[0]}", int(multi[1]), multi[3], f"{multi[4]},{other}", "1/2", "multiallelic")
     )
+    # The second ALT is the first base not already used at the site; say whether ClinVar
+    # has it, since that decides how many P/LP rows the split record gives.
+    second = next(
+        (r for r in rows if r[:2] == multi[:2] and r[3] == multi[3] and r[4] == other), None
+    )
+    second_note = (
+        f"second ALT {other} is ClinVar {second[2]} {second[5]}"
+        if second
+        else f"second ALT {other} is not in ClinVar"
+    )
     notes.append(
-        f"chr{multi[0]}:{multi[1]} multiallelic {multi[3]}>{multi[4]},{other} (ClinVar {multi[2]} "
-        "plus a made-up second ALT), GT 1/2"
+        f"chr{multi[0]}:{multi[1]} multiallelic {multi[3]}>{multi[4]},{other} (ClinVar {multi[2]}; "
+        f"{second_note}), GT 1/2"
     )
     # A one-base deletion inside a homopolymer, written one base to the right of where
     # ClinVar (left-aligned) puts it; bcftools norm must move it back to match.

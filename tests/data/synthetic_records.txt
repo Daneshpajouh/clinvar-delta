@@ -3,5 +3,5 @@ chr13:32316420 A>G ClinVar 438974, P/LP with 2+ stars, GT 0/1
 chr13:32316421 G>A ClinVar 403704, P/LP with 2+ stars, GT 0/1
 chr13:32338295 ClinVar 1801539, P/LP with 0 stars, GT 0/1
 chr13:32316421 ClinVar 1067980, P/LP but GT 0/0
-chr13:32316462 multiallelic T>A,C (ClinVar 431282 plus a made-up second ALT), GT 1/2
+chr13:32316462 multiallelic T>A,C (ClinVar 431282; second ALT C is ClinVar 51384 Pathogenic/Likely_pathogenic), GT 1/2
 chr13:32316464 CC>C is ClinVar 51985 (13:32316463 GC>G) shifted right by one base
