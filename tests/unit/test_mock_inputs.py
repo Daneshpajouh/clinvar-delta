@@ -303,3 +303,22 @@ def test_report_reads_gene_names_past_a_track_line(tmp_path: Path) -> None:
     )
     assert code == 0
     assert json.loads(paths["json"].read_text())["panel_genes"] == 1
+
+
+def test_manifest_hashes_each_input_and_refuses_a_missing_one(tmp_path: Path) -> None:
+    bed = tmp_path / "brca1.bed"
+    bed.write_text("chr17\t43044294\t43125483\tBRCA1\n")
+    out = tmp_path / "m.json"
+    assert run("manifest", "--engine", "nextflow 24.10.4", "--out", str(out), str(bed)) == 0
+    # Digest taken with `shasum -a 256` on the same 30 bytes.
+    assert json.loads(out.read_text())["inputs"] == {
+        "brca1.bed": {
+            "sha256": "b5e0b25d6769ca8ef877452dc9e54f6019299a37c8ea0990b298e9651d973de0",
+            "bytes": 30,
+        }
+    }
+    missing = tmp_path / "gone.vcf.gz"
+    assert (
+        run("manifest", "--engine", "nextflow 24.10.4", "--out", str(out), str(bed), str(missing))
+        == 1
+    )

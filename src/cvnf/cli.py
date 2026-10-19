@@ -419,8 +419,10 @@ def cmd_manifest(args: argparse.Namespace) -> int:
     files = {}
     for item in args.inputs:
         path = Path(item)
-        if path.is_file():
-            files[path.name] = {"sha256": sha256(path), "bytes": path.stat().st_size}
+        if not path.is_file():
+            # A manifest that leaves out an input would misstate what the run read.
+            raise ValueError(f"{item}: input is not a readable file")
+        files[path.name] = {"sha256": sha256(path), "bytes": path.stat().st_size}
     manifest = {
         "pipeline": "clinvar-delta",
         "version": __version__,
