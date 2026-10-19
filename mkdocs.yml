@@ -1,0 +1,26 @@
+site_name: clinvar-variant-nf
+repo_url: https://github.com/Daneshpajouh/clinvar-variant-nf
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - ClinVar explained: explainer.md
+  - Usage: usage.md
+  - Parameters: parameters.md
+  - Results: results.md
+  - Profiling: profiling.md
+  - Logging: logging.md
+  - Testing: testing.md
+  - Test report v1.0.0: test_report.md
+  - Code walk-through: code_walkthrough.md
+  - Maintenance SOP: sop.md
+  - Operations notes: operations.md
+  - Data sources: data_sources.md
+  - Example reports:
+      - HG002 panel report: examples/hg002_report.md
+      - ClinVar release diff: examples/clinvar_diff_report.md
+      - Usage report, HG002 run: examples/usage_report_hg002.md
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true

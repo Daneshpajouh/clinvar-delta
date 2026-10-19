@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the tag matches the pipeline version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          grep -q "version = '${version}'" nextflow.config
+          grep -q "^version = \"${version}\"" pyproject.toml
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: containers/Dockerfile
+          push: true
+          tags: ghcr.io/daneshpajouh/clinvar-variant-nf:${{ github.ref_name }}
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="## ${version} " 'index($0, v) == 1 {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
+          printf '\nTools image: ghcr.io/daneshpajouh/clinvar-variant-nf@%s\n' "${{ steps.build.outputs.digest }}" >> notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: notes.md

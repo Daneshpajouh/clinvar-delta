@@ -63,8 +63,46 @@ workflow {
         .unique()
         .collectFile(name: 'software_versions.yml', storeDir: "${params.outdir}/pipeline_info", sort: true)
 
-    CVNF_MANIFEST(inputs.collect(), params_json, gitCommit(), containers)
+    // The manifest task starts as soon as the inputs are known, before the analysis steps finish.
+    CVNF_MANIFEST(inputs.collect(), params_json, gitCommit(), containers, workflow.start.toString())
 
     onComplete:
+    writeRunSummary()
     log.info("clinvar-variant-nf ${workflow.success ? 'completed' : 'failed'}: ${workflow.duration}, results in ${params.outdir}")
+}
+
+// Runs after success and after failure, so a failed run still leaves a summary next to its
+// trace: status, duration, task counts, the error, and every published file with SHA-256.
+def writeRunSummary() {
+    def outdir = file(params.outdir)
+    def outputs = [:]
+    if (outdir.exists()) {
+        outdir.eachFileRecurse { f ->
+            if (f.isFile() && !f.name.startsWith('execution_') && f.name != 'run_summary.json') {
+                def digest = java.security.MessageDigest.getInstance('SHA-256')
+                f.withInputStream { stream ->
+                    stream.eachByte(65536) { buffer, n -> digest.update(buffer, 0, n) }
+                }
+                outputs[outdir.relativize(f).toString()] = digest.digest().encodeHex().toString()
+            }
+        }
+    }
+    def stats = workflow.stats
+    def summary = [
+        status: workflow.success ? 'success' : 'failed',
+        started: workflow.start.toString(),
+        completed: workflow.complete.toString(),
+        duration_ms: workflow.duration.toMillis(),
+        nextflow: workflow.nextflow.version.toString(),
+        profile: workflow.profile,
+        session_id: workflow.sessionId.toString(),
+        tasks: [succeeded: stats.succeededCount, cached: stats.cachedCount, failed: stats.failedCount,
+                ignored: stats.ignoredCount, retried: stats.retriesCount],
+        error: workflow.errorMessage ?: null,
+        trace: "${params.outdir}/pipeline_info/execution_trace.txt",
+        outputs: outputs.sort(),
+    ]
+    def target = file("${params.outdir}/pipeline_info/run_summary.json")
+    target.parent.mkdirs()
+    target.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(summary)) + "\n"
 }

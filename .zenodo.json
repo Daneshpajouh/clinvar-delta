@@ -1,0 +1,8 @@
+{
+    "title": "clinvar-variant-nf",
+    "description": "Nextflow pipeline for ClinVar panel reports on germline VCFs and for auditing changes between ClinVar releases.",
+    "upload_type": "software",
+    "license": "Apache-2.0",
+    "creators": [{"name": "Daneshpajouh, Amir"}],
+    "keywords": ["ClinVar", "Nextflow", "variant annotation", "bioinformatics"]
+}

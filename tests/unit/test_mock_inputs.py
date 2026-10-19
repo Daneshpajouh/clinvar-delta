@@ -146,3 +146,14 @@ def test_diff_on_mock_releases(tmp_path: Path) -> None:
     data = json.loads(js.read_text())
     assert data["assertion_changes"] == 1
     assert data["annotation_changes"] == 1
+
+
+def test_malformed_input_is_named_in_the_error_log(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    bad = MOCK / "malformed.vcf"
+    assert run("filter", "--sample", "S1", "--vcf", str(bad), "--out", str(tmp_path / "t.tsv")) == 1
+    error = json.loads(capsys.readouterr().err.strip().splitlines()[-1])
+    assert error["level"] == "error"
+    assert "line 4" in error["error"]
+    assert str(bad) in error["inputs"]

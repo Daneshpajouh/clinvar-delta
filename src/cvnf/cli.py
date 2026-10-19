@@ -382,6 +382,7 @@ def cmd_manifest(args: argparse.Namespace) -> int:
     manifest = {
         "pipeline": "clinvar-variant-nf",
         "version": __version__,
+        "run_started": args.started,
         "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "engine": args.engine,
         "git_commit": args.git_commit,
@@ -550,6 +551,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--git-commit", default="unknown")
     p.add_argument("--params")
     p.add_argument("--containers")
+    p.add_argument("--started", default="unknown")
     p.add_argument("--out", required=True)
     p.add_argument("inputs", nargs="*")
     p.set_defaults(func=cmd_manifest)
@@ -576,5 +578,18 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     setup_logging(args.command)
-    result: int = args.func(args)
+    try:
+        result: int = args.func(args)
+    except (OSError, ValueError) as exc:
+        # Name the files this command was given, so the failing input is in the task log.
+        inputs = sorted(
+            str(v)
+            for k, v in vars(args).items()
+            if k not in {"func", "command"} and isinstance(v, str)
+        )
+        log.error(
+            "failed",
+            extra={"fields": {"command": args.command, "error": str(exc), "inputs": inputs}},
+        )
+        return 1
     return result

@@ -97,11 +97,16 @@ def test_pipeline_info_written(annotate_run: Path) -> None:
         "execution_timeline.html",
         "software_versions.yml",
         "run_manifest.json",
+        "run_summary.json",
     ):
         assert (info / name).is_file(), name
     manifest = json.loads((info / "run_manifest.json").read_text())
     assert manifest["params"]["min_stars"] == 1
     assert all(len(v["sha256"]) == 64 for v in manifest["inputs"].values())
+    summary = json.loads((info / "run_summary.json").read_text())
+    assert summary["status"] == "success"
+    assert summary["tasks"]["failed"] == 0
+    assert len(summary["outputs"]["report/SYNTH01.report.json"]) == 64
 
 
 def test_resume_reuses_every_task_and_outputs_are_unchanged(annotate_run: Path) -> None:
