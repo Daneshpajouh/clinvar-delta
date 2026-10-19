@@ -1,0 +1,19 @@
+nextflow_pipeline {
+    name "clinvar-variant-nf diff mode"
+    script "../../../main.nf"
+    profile "test_diff"
+
+    test("diff mode on the bundled ClinVar subsets") {
+        when {
+            params {
+                outdir = "${outputDir}/results"
+            }
+        }
+        then {
+            assert workflow.success
+            def panel = path("${outputDir}/results/clinvar_diff/diff.panel.json").json
+            assert panel.changes.reclassified > 0
+            assert snapshot(panel.changes, panel.transitions).match()
+        }
+    }
+}

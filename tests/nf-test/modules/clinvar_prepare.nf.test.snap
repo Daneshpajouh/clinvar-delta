@@ -1,0 +1,12 @@
+{
+    "renames contigs to chr style and restricts to regions": {
+        "content": [
+            40866
+        ],
+        "timestamp": "2026-10-19T11:52:10.7401",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}

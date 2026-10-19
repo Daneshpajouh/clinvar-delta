@@ -1,0 +1,106 @@
+{
+    "diff mode on the bundled ClinVar subsets": {
+        "content": [
+            {
+                "added": 1805,
+                "reclassified": 550,
+                "removed": 21,
+                "review_changed": 778,
+                "term_changed": 55,
+                "unchanged": 37689
+            },
+            [
+                {
+                    "count": 192,
+                    "new": "CONFLICTING",
+                    "old": "VUS"
+                },
+                {
+                    "count": 87,
+                    "new": "CONFLICTING",
+                    "old": "BLB"
+                },
+                {
+                    "count": 80,
+                    "new": "PLP",
+                    "old": "CONFLICTING"
+                },
+                {
+                    "count": 41,
+                    "new": "BLB",
+                    "old": "NONE"
+                },
+                {
+                    "count": 31,
+                    "new": "VUS",
+                    "old": "CONFLICTING"
+                },
+                {
+                    "count": 30,
+                    "new": "VUS",
+                    "old": "NONE"
+                },
+                {
+                    "count": 29,
+                    "new": "BLB",
+                    "old": "CONFLICTING"
+                },
+                {
+                    "count": 18,
+                    "new": "CONFLICTING",
+                    "old": "PLP"
+                },
+                {
+                    "count": 11,
+                    "new": "PLP",
+                    "old": "NONE"
+                },
+                {
+                    "count": 9,
+                    "new": "PLP",
+                    "old": "VUS"
+                },
+                {
+                    "count": 7,
+                    "new": "BLB",
+                    "old": "VUS"
+                },
+                {
+                    "count": 5,
+                    "new": "VUS",
+                    "old": "PLP"
+                },
+                {
+                    "count": 3,
+                    "new": "VUS",
+                    "old": "BLB"
+                },
+                {
+                    "count": 2,
+                    "new": "CONFLICTING",
+                    "old": "NONE"
+                },
+                {
+                    "count": 2,
+                    "new": "PLP",
+                    "old": "OTHER"
+                },
+                {
+                    "count": 2,
+                    "new": "VUS",
+                    "old": "OTHER"
+                },
+                {
+                    "count": 1,
+                    "new": "BLB",
+                    "old": "OTHER"
+                }
+            ]
+        ],
+        "timestamp": "2026-10-19T11:52:53.757766",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}

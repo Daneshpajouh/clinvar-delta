@@ -1,0 +1,23 @@
+{
+    "classifies the hand-written releases": {
+        "content": [
+            [
+                [
+                    "all",
+                    "diff.all.changes.tsv.gz:md5,6915b359ce160408576fc8e082eaf5d8"
+                ]
+            ],
+            [
+                [
+                    "all",
+                    "diff.all.json:md5,21b828c362af8a6555e49409b0b302bd"
+                ]
+            ]
+        ],
+        "timestamp": "2026-10-19T11:52:23.18581",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}

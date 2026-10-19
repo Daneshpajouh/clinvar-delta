@@ -1,0 +1,27 @@
+nextflow_process {
+    name "CVNF_FILTER"
+    script "../../../modules/local/cvnf_filter/main.nf"
+    process "CVNF_FILTER"
+
+    test("records the reason for each non-reportable variant") {
+        when {
+            params {
+                min_stars = 1
+                max_af = 0.01
+                include_low_penetrance = true
+            }
+            process {
+                """
+                input[0] = [[id: 'S1'], file("${projectDir}/tests/data/mock/missing_clinvar_fields.vcf")]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def lines = path(process.out.table[0][1]).readLines()
+            assert lines.size() == 4
+            assert lines.count { line -> line.contains('\tyes\t') } == 1
+            assert snapshot(process.out.table).match()
+        }
+    }
+}

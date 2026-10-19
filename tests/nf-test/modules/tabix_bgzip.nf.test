@@ -1,0 +1,20 @@
+nextflow_process {
+    name "TABIX_BGZIP"
+    script "../../../modules/local/tabix_bgzip/main.nf"
+    process "TABIX_BGZIP"
+
+    test("indexes a BED file") {
+        when {
+            process {
+                """
+                input[0] = [file("${projectDir}/tests/data/panel.bed"), 'bed']
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.indexed[0][0]).linesGzip.size() == 3
+            assert file(process.out.indexed[0][1]).exists()
+        }
+    }
+}

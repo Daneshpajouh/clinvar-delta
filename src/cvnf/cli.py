@@ -34,6 +34,7 @@ from cvnf.diff import (
 )
 from cvnf.panel import acmg_symbols, lookup_to_bed, pad_bed, read_lookup, request_body
 from cvnf.profiling import (
+    calibrated_config,
     fmt_bytes,
     fmt_pct,
     fmt_secs,
@@ -443,6 +444,22 @@ def cmd_profile_usage(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_profile_calibrate(args: argparse.Namespace) -> int:
+    tasks = []
+    for trace in args.trace:
+        with open_text(trace) as handle:
+            tasks += read_trace(handle)
+    config = calibrated_config(
+        summarise(tasks),
+        source=", ".join(f"{Path(t).parent.parent.name}/{Path(t).name}" for t in args.trace),
+        memory_headroom=args.memory_headroom,
+        time_headroom=args.time_headroom,
+    )
+    write_text(args.out, config)
+    info("calibrated config", processes=config.count("withName"), out=args.out)
+    return 0
+
+
 def cmd_profile_sacct(args: argparse.Namespace) -> int:
     steps = parse_sacct(Path(args.input).read_text(encoding="utf-8"))
     rows = slurm_job_rows(steps)
@@ -542,6 +559,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--markdown", required=True)
     p.add_argument("--html")
     p.set_defaults(func=cmd_profile_usage)
+
+    p = sub.add_parser("profile-calibrate", help="per-process requests from measured traces")
+    p.add_argument("--trace", required=True, action="append")
+    p.add_argument("--memory-headroom", type=float, default=2.0)
+    p.add_argument("--time-headroom", type=float, default=4.0)
+    p.add_argument("--out", required=True)
+    p.set_defaults(func=cmd_profile_calibrate)
 
     p = sub.add_parser("profile-sacct", help="summarise sacct --parsable2 output")
     p.add_argument("--input", required=True)

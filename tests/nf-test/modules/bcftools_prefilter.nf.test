@@ -1,0 +1,26 @@
+nextflow_process {
+    name "BCFTOOLS_PREFILTER"
+    script "../../../modules/local/bcftools_prefilter/main.nf"
+    process "BCFTOOLS_PREFILTER"
+
+    test("keeps only records inside the regions") {
+        when {
+            process {
+                """
+                def regions = file("${workDir}/tp53.bed")
+                regions.text = "chr17\\t7661778\\t7687546\\tTP53\\n"
+                input[0] = [[id: 'HG002'], file("${projectDir}/tests/data/HG002.subset.vcf.gz"), file("${projectDir}/tests/data/HG002.subset.vcf.gz.tbi")]
+                input[1] = regions
+                """
+            }
+        }
+        then {
+            assert process.success
+            def body = path(process.out.vcf[0][1]).linesGzip.findAll { line -> !line.startsWith('#') }
+            assert body.size() > 0
+            assert body.every { line -> line.startsWith('chr17\t') }
+            assert body.every { line -> (line.split('\t')[1] as long) in 7661779L..7687546L }
+            assert snapshot(body.size()).match()
+        }
+    }
+}

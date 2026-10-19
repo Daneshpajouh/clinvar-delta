@@ -1,0 +1,14 @@
+{
+    "pads each interval by 1000 bases": {
+        "content": [
+            [
+                "panel.padded.bed:md5,516522b1e909346381d45769e5fc09bd"
+            ]
+        ],
+        "timestamp": "2026-10-19T11:52:33.007706",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}

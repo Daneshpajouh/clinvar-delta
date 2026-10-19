@@ -1,0 +1,17 @@
+{
+    "sorts records numerically by Variation ID": {
+        "content": [
+            39235,
+            [
+                9317,
+                9318,
+                9319
+            ]
+        ],
+        "timestamp": "2026-10-19T11:52:14.745639",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}

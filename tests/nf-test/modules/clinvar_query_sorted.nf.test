@@ -1,0 +1,21 @@
+nextflow_process {
+    name "CLINVAR_QUERY_SORTED"
+    script "../../../modules/local/clinvar_query_sorted/main.nf"
+    process "CLINVAR_QUERY_SORTED"
+
+    test("sorts records numerically by Variation ID") {
+        when {
+            process {
+                """
+                input[0] = ['old', 'clinvar_20251013', file("${projectDir}/tests/data/clinvar_20251013.subset.vcf.gz"), file("${projectDir}/tests/data/clinvar_20251013.subset.vcf.gz.tbi")]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def ids = path(process.out.tsv[0][2]).linesGzip.collect { row -> row.split('\t')[0] as long }
+            assert ids == ids.sort(false)
+            assert snapshot(ids.size(), ids.take(3)).match()
+        }
+    }
+}

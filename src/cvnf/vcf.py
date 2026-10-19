@@ -76,11 +76,19 @@ class VcfFile:
     records: Iterator[VcfRecord]
 
 
-def _records(lines: Iterator[str], n_samples: int) -> Iterator[VcfRecord]:
-    for line in lines:
+class VcfFormatError(ValueError):
+    pass
+
+
+def _records(lines: Iterator[str], n_samples: int, offset: int) -> Iterator[VcfRecord]:
+    for number, line in enumerate(lines, start=offset + 1):
         if not line.strip():
             continue
         cols = line.rstrip("\n").split("\t")
+        if len(cols) < 8 or not cols[1].isdigit():
+            raise VcfFormatError(
+                f"line {number}: expected 8+ tab-separated columns with a numeric POS"
+            )
         sample: dict[str, str] = {}
         if n_samples and len(cols) > 9:
             sample = dict(zip(cols[8].split(":"), cols[9].split(":"), strict=False))
@@ -102,6 +110,8 @@ def read_vcf(handle: TextIO) -> VcfFile:
     header: list[str] = []
     samples: list[str] = []
     for line in handle:
+        if not line.startswith("#"):
+            raise VcfFormatError("no #CHROM header line before the first record")
         if line.startswith("##"):
             header.append(line.rstrip("\n"))
             continue
@@ -109,7 +119,10 @@ def read_vcf(handle: TextIO) -> VcfFile:
             header.append(line.rstrip("\n"))
             samples = line.rstrip("\n").split("\t")[9:]
             break
-    return VcfFile(header=header, samples=samples, records=_records(iter(handle), len(samples)))
+    if not header:
+        raise VcfFormatError("empty file: no VCF header")
+    records = _records(iter(handle), len(samples), offset=len(header))
+    return VcfFile(header=header, samples=samples, records=records)
 
 
 def header_contigs(lines: list[str]) -> list[str]:

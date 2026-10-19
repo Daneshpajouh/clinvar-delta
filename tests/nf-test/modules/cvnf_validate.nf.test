@@ -1,0 +1,37 @@
+nextflow_process {
+    name "CVNF_VALIDATE"
+    script "../../../modules/local/cvnf_validate/main.nf"
+    process "CVNF_VALIDATE"
+
+    test("passes a chr-prefixed sample") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'HG002'], file("${projectDir}/tests/data/HG002.subset.vcf.gz"), file("${projectDir}/tests/data/HG002.subset.vcf.gz.tbi")]
+                input[1] = [file("${projectDir}/tests/data/reference.fa.gz"), file("${projectDir}/tests/data/reference.fa.gz.fai"), file("${projectDir}/tests/data/reference.fa.gz.gzi")]
+                input[2] = file("${projectDir}/tests/data/panel.bed")
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.report[0][1]).json.problems == []
+        }
+    }
+
+    test("stops on a contig naming mismatch") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'bad'], file("${projectDir}/tests/data/mock/no_chr_prefix.vcf"), file("${projectDir}/tests/data/mock/no_chr_prefix.vcf")]
+                input[1] = [file("${projectDir}/tests/data/reference.fa.gz"), file("${projectDir}/tests/data/reference.fa.gz.fai"), file("${projectDir}/tests/data/reference.fa.gz.gzi")]
+                input[2] = file("${projectDir}/tests/data/panel.bed")
+                """
+            }
+        }
+        then {
+            assert process.failed
+            assert process.exitStatus == 1
+        }
+    }
+}

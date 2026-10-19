@@ -1,0 +1,22 @@
+nextflow_pipeline {
+    name "clinvar-variant-nf stub run"
+    script "../../../main.nf"
+    options "-stub-run"
+
+    test("stub run wires every process in annotate mode") {
+        when {
+            params {
+                def data = "${baseDir}/tests/data"
+                def sheet = new File("${outputDir}/samplesheet.csv")
+                sheet.parentFile.mkdirs()
+                sheet.text = "sample,vcf,tbi\nHG002,${data}/HG002.subset.vcf.gz,${data}/HG002.subset.vcf.gz.tbi\n"
+                input = sheet.toString()
+                outdir = "${outputDir}/results"
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.trace.succeeded().size() == 12
+        }
+    }
+}

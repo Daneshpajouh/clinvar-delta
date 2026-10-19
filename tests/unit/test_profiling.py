@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from cvnf.profiling import (
+    calibrated_config,
     parse_duration,
     parse_sacct,
     parse_size,
@@ -85,3 +86,14 @@ def test_sacct_fixture_rows() -> None:
 def test_sacct_wrong_field_count_raises() -> None:
     with pytest.raises(ValueError, match="expected 10 fields"):
         parse_sacct("1|2|3\n")
+
+
+def test_calibrated_config_from_recorded_trace() -> None:
+    with (FIXTURES / "nextflow_trace_test_docker.txt").open() as handle:
+        summaries = summarise(read_trace(handle))
+    config = calibrated_config(summaries, source="fixture")
+    assert config.count("withName") == len(summaries)
+    # Every recorded task here peaked far below 128 MB, so the floors apply.
+    assert "memory = { 256.MB * task.attempt }" in config
+    assert "time = { 10.min * task.attempt }" in config
+    assert config.rstrip().endswith("}")

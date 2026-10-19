@@ -1,0 +1,19 @@
+{
+    "records the reason for each non-reportable variant": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "S1"
+                    },
+                    "S1.panel_variants.tsv:md5,4e0369583cc4bf87a832366efc06f417"
+                ]
+            ]
+        ],
+        "timestamp": "2026-10-19T11:52:28.274682",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.2"
+        }
+    }
+}

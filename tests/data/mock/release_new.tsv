@@ -1,0 +1,3 @@
+1	1	100	A	G	Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	GENE1:1
+2	1	151	C	T	Pathogenic	reviewed_by_expert_panel	GENE1:1
+4	1	300	T	C	Likely_benign	criteria_provided,_single_submitter	GENE1:1

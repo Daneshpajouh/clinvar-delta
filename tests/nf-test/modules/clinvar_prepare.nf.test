@@ -1,0 +1,24 @@
+nextflow_process {
+    name "CLINVAR_PREPARE"
+    script "../../../modules/local/clinvar_prepare/main.nf"
+    process "CLINVAR_PREPARE"
+
+    test("renames contigs to chr style and restricts to regions") {
+        when {
+            process {
+                """
+                input[0] = [file("${projectDir}/tests/data/clinvar_20261011.subset.vcf.gz"), file("${projectDir}/tests/data/clinvar_20261011.subset.vcf.gz.tbi")]
+                input[1] = [file("${projectDir}/tests/data/reference.fa.gz"), file("${projectDir}/tests/data/reference.fa.gz.fai"), file("${projectDir}/tests/data/reference.fa.gz.gzi")]
+                input[2] = file("${projectDir}/tests/data/panel.bed")
+                """
+            }
+        }
+        then {
+            assert process.success
+            def rows = path(process.out.tsv[0]).linesGzip
+            assert rows.size() > 1000
+            assert rows.every { row -> row.startsWith('chr13\t') || row.startsWith('chr17\t') }
+            assert snapshot(rows.size()).match()
+        }
+    }
+}

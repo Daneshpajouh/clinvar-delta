@@ -1,0 +1,21 @@
+nextflow_process {
+    name "CVNF_PANEL_PAD"
+    script "../../../modules/local/cvnf_panel_pad/main.nf"
+    process "CVNF_PANEL_PAD"
+
+    test("pads each interval by 1000 bases") {
+        when {
+            process {
+                """
+                input[0] = file("${projectDir}/tests/data/panel.bed")
+                input[1] = 1000
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.bed[0]).readLines()[0] == "chr13\t32314085\t32401268\tBRCA2"
+            assert snapshot(process.out.bed).match()
+        }
+    }
+}
