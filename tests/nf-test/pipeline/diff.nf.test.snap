@@ -3,10 +3,11 @@
         "content": [
             {
                 "added": 1805,
+                "annotation_only": 4,
                 "reclassified": 550,
                 "removed": 21,
                 "review_changed": 778,
-                "term_changed": 55,
+                "term_changed": 57,
                 "unchanged": 37689
             },
             [
@@ -97,7 +98,7 @@
                 }
             ]
         ],
-        "timestamp": "2026-10-19T11:52:53.757766",
+        "timestamp": "2026-10-19T13:22:58.90182",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.2"

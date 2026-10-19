@@ -10,6 +10,8 @@ nextflow_process {
                 input[0] = [[id: 'HG002'], file("${projectDir}/tests/data/HG002.subset.vcf.gz"), file("${projectDir}/tests/data/HG002.subset.vcf.gz.tbi")]
                 input[1] = [file("${projectDir}/tests/data/reference.fa.gz"), file("${projectDir}/tests/data/reference.fa.gz.fai"), file("${projectDir}/tests/data/reference.fa.gz.gzi")]
                 input[2] = file("${projectDir}/tests/data/panel.bed")
+                input[3] = [file("${projectDir}/tests/data/gnomad.subset.vcf.gz"), file("${projectDir}/tests/data/gnomad.subset.vcf.gz.tbi")]
+                input[4] = files("${projectDir}/src/cvnf/*.py")
                 """
             }
         }
@@ -26,6 +28,8 @@ nextflow_process {
                 input[0] = [[id: 'bad'], file("${projectDir}/tests/data/mock/no_chr_prefix.vcf"), file("${projectDir}/tests/data/mock/no_chr_prefix.vcf")]
                 input[1] = [file("${projectDir}/tests/data/reference.fa.gz"), file("${projectDir}/tests/data/reference.fa.gz.fai"), file("${projectDir}/tests/data/reference.fa.gz.gzi")]
                 input[2] = file("${projectDir}/tests/data/panel.bed")
+                input[3] = [file("${projectDir}/tests/data/gnomad.subset.vcf.gz"), file("${projectDir}/tests/data/gnomad.subset.vcf.gz.tbi")]
+                input[4] = files("${projectDir}/src/cvnf/*.py")
                 """
             }
         }

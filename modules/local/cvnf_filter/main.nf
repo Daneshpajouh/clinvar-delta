@@ -5,6 +5,7 @@ process CVNF_FILTER {
 
     input:
     tuple val(meta), path(panel_vcf)
+    path cvnf_src, stageAs: 'cvnf_pkg/cvnf/*'
 
     output:
     tuple val(meta), path("${meta.id}.panel_variants.tsv"), emit: table
@@ -13,12 +14,12 @@ process CVNF_FILTER {
     script:
     def low_pen = params.include_low_penetrance ? '' : '--exclude-low-penetrance'
     """
-    cvnf filter --sample ${meta.id} --vcf ${panel_vcf} --out ${meta.id}.panel_variants.tsv \\
+    PYTHONPATH=cvnf_pkg python3 -m cvnf filter --sample ${meta.id} --vcf ${panel_vcf} --out ${meta.id}.panel_variants.tsv \\
         --min-stars ${params.min_stars} --max-af ${params.max_af} ${low_pen}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cvnf: \$(cvnf --version | cut -d' ' -f2)
+        cvnf: \$(PYTHONPATH=cvnf_pkg python3 -m cvnf --version | cut -d' ' -f2)
     END_VERSIONS
     """
 

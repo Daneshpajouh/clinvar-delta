@@ -8,13 +8,14 @@ process CVNF_MANIFEST {
     val git_commit
     val containers
     val started
+    path cvnf_src, stageAs: 'cvnf_pkg/cvnf/*'
 
     output:
     path "run_manifest.json", emit: manifest
 
     script:
     """
-    cvnf manifest --engine 'nextflow ${workflow.nextflow.version}' --git-commit '${git_commit}' \\
+    PYTHONPATH=cvnf_pkg python3 -m cvnf manifest --engine 'nextflow ${workflow.nextflow.version}' --git-commit '${git_commit}' \\
         --params ${params_json} --containers '${containers}' --started '${started}' \\
         --out run_manifest.json inputs/*
     """

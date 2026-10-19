@@ -5,6 +5,7 @@ process CVNF_DIFF_REPORT {
     input:
     path all_json
     path panel_json
+    path cvnf_src, stageAs: 'cvnf_pkg/cvnf/*'
 
     output:
     tuple path("clinvar_diff.report.md"), path("clinvar_diff.report.html"), emit: report
@@ -13,12 +14,12 @@ process CVNF_DIFF_REPORT {
     script:
     def panel_arg = panel_json.name != 'NO_PANEL' ? "--panel-json ${panel_json}" : ''
     """
-    cvnf diff-report --all-json ${all_json} ${panel_arg} \\
+    PYTHONPATH=cvnf_pkg python3 -m cvnf diff-report --all-json ${all_json} ${panel_arg} \\
         --markdown clinvar_diff.report.md --html clinvar_diff.report.html
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cvnf: \$(cvnf --version | cut -d' ' -f2)
+        cvnf: \$(PYTHONPATH=cvnf_pkg python3 -m cvnf --version | cut -d' ' -f2)
     END_VERSIONS
     """
 

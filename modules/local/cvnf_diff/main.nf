@@ -6,6 +6,7 @@ process CVNF_DIFF {
     input:
     tuple val(old_label), path(old_tsv), val(new_label), path(new_tsv)
     tuple val(scope), path(genes)
+    path cvnf_src, stageAs: 'cvnf_pkg/cvnf/*'
 
     output:
     tuple val(scope), path("diff.${scope}.changes.tsv.gz"), emit: changes
@@ -15,12 +16,12 @@ process CVNF_DIFF {
     script:
     def gene_arg = genes.name != 'NO_GENES' ? "--genes ${genes}" : ''
     """
-    cvnf diff --old ${old_tsv} --new ${new_tsv} --old-label ${old_label} --new-label ${new_label} \\
+    PYTHONPATH=cvnf_pkg python3 -m cvnf diff --old ${old_tsv} --new ${new_tsv} --old-label ${old_label} --new-label ${new_label} \\
         ${gene_arg} --out diff.${scope}.changes.tsv.gz --json diff.${scope}.json
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cvnf: \$(cvnf --version | cut -d' ' -f2)
+        cvnf: \$(PYTHONPATH=cvnf_pkg python3 -m cvnf --version | cut -d' ' -f2)
     END_VERSIONS
     """
 

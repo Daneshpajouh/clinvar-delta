@@ -106,7 +106,9 @@ def test_pipeline_info_written(annotate_run: Path) -> None:
     summary = json.loads((info / "run_summary.json").read_text())
     assert summary["status"] == "success"
     assert summary["tasks"]["failed"] == 0
-    assert len(summary["outputs"]["report/SYNTH01.report.json"]) == 64
+    assert len(summary["outputs"]["SYNTH01.report.json"]["sha256"]) == 64
+    # Only this run's files: 7 per sample.
+    assert len(summary["outputs"]) == 14
 
 
 def test_resume_reuses_every_task_and_outputs_are_unchanged(annotate_run: Path) -> None:
@@ -125,7 +127,7 @@ def test_resume_reuses_every_task_and_outputs_are_unchanged(annotate_run: Path) 
     assert match is not None
     # Only the run manifest is rebuilt: it records this run's time and params file.
     assert int(match.group(1)) == 1
-    assert int(match.group(2)) >= 15
+    assert int(match.group(2)) >= 16
     assert digests(annotate_run / "results") == before
 
 
@@ -168,3 +170,43 @@ def test_invalid_samplesheet_is_rejected(tmp_path: Path) -> None:
     result = subprocess.run(cmd, cwd=tmp_path, capture_output=True, text=True, check=False)
     assert result.returncode != 0
     assert "sample may contain letters" in result.stdout + result.stderr
+
+
+def test_resume_reruns_python_steps_after_a_source_change(tmp_path: Path) -> None:
+    # Work on a copy of the checkout (tracked and new files) so the real source is not edited.
+    tracked = subprocess.run(
+        ["git", "ls-files", "-co", "--exclude-standard"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+    repo = tmp_path / "repo"
+    for name in tracked:
+        dest = repo / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / name, dest)
+    sheet = samplesheet(tmp_path)
+    args = ["-profile", PROFILE, "--input", str(sheet), "--outdir", "results"]
+    subprocess.run(
+        ["nextflow", "run", str(repo / "main.nf"), *args],
+        cwd=tmp_path,
+        capture_output=True,
+        check=True,
+    )
+    report_py = repo / "src" / "cvnf" / "report.py"
+    report_py.write_text(report_py.read_text() + "\n# edited by the resume test\n")
+    subprocess.run(
+        ["nextflow", "run", str(repo / "main.nf"), *args, "-resume"],
+        cwd=tmp_path,
+        capture_output=True,
+        check=True,
+    )
+    with (tmp_path / "results/pipeline_info/execution_trace.txt").open() as handle:
+        status = {r["name"]: r["status"] for r in csv.DictReader(handle, delimiter="\t")}
+    assert status["ANNOTATE:CVNF_REPORT (SYNTH01)"] == "COMPLETED"
+    assert status["ANNOTATE:CVNF_FILTER (HG002)"] == "COMPLETED"
+    # TABIX_PANEL reads only the panel BED, so it stays cached. The bcftools steps rerun
+    # because they take the padded panel written by CVNF_PANEL_PAD, a cvnf task.
+    assert status["ANNOTATE:TABIX_PANEL (panel.bed)"] == "CACHED"
+    assert status["ANNOTATE:BCFTOOLS_NORM (HG002)"] == "COMPLETED"

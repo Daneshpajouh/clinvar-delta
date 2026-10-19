@@ -7,6 +7,8 @@ process CVNF_VALIDATE {
     tuple val(meta), path(vcf), path(tbi)
     tuple path(fasta), path(fai), path(gzi)
     path panel
+    tuple path(gnomad), path(gnomad_tbi)
+    path cvnf_src, stageAs: 'cvnf_pkg/cvnf/*'
 
     output:
     tuple val(meta), path("${meta.id}.validation.json"), emit: report
@@ -14,12 +16,12 @@ process CVNF_VALIDATE {
 
     script:
     """
-    cvnf validate --sample ${meta.id} --vcf ${vcf} --fai ${fai} --panel ${panel} \\
-        --out ${meta.id}.validation.json
+    PYTHONPATH=cvnf_pkg python3 -m cvnf validate --sample ${meta.id} --vcf ${vcf} --fai ${fai} --panel ${panel} \\
+        --gnomad ${gnomad} --out ${meta.id}.validation.json
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cvnf: \$(cvnf --version | cut -d' ' -f2)
+        cvnf: \$(PYTHONPATH=cvnf_pkg python3 -m cvnf --version | cut -d' ' -f2)
     END_VERSIONS
     """
 

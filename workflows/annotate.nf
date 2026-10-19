@@ -17,26 +17,38 @@ workflow ANNOTATE {
     clinvar   // value: [ vcf, tbi ]
     gnomad    // value: [ vcf, tbi ]
     panel     // value: bed
+    cvnf_src  // value: list of src/cvnf/*.py, staged so the task hash follows the code
 
     main:
     versions = channel.empty()
 
-    CVNF_PANEL_PAD(panel, params.panel_padding)
+    CVNF_PANEL_PAD(panel, params.panel_padding, cvnf_src)
     TABIX_PANEL(panel.map { bed -> [bed, 'bed'] })
 
-    // Validation runs first; a sample that fails stops the run before any bcftools work.
-    CVNF_VALIDATE(samples, fasta, panel)
-    validated = samples.join(CVNF_VALIDATE.out.report).map { meta, vcf, tbi, _report -> [meta, vcf, tbi] }
+    // Each sample waits for its validation report before normalisation; reference
+    // preparation runs independently. The join is keyed on the sample ID and fails on a
+    // missing or repeated sample instead of dropping it.
+    CVNF_VALIDATE(samples, fasta, panel, gnomad, cvnf_src)
+    validated = samples
+        .map { meta, vcf, tbi -> [meta.id, meta, vcf, tbi] }
+        .join(CVNF_VALIDATE.out.report.map { meta, report -> [meta.id, report] }, failOnDuplicate: true, failOnMismatch: true)
+        .map { _id, meta, vcf, tbi, _report -> [meta, vcf, tbi] }
 
     regions = params.prefilter_panel ? CVNF_PANEL_PAD.out.bed : channel.value(file("${projectDir}/assets/NO_REGIONS"))
     CLINVAR_PREPARE(clinvar, fasta, regions)
-    CVNF_CLINVAR_TABLE(CLINVAR_PREPARE.out.tsv)
+    CVNF_CLINVAR_TABLE(CLINVAR_PREPARE.out.tsv, cvnf_src)
     TABIX_CLINVAR(CVNF_CLINVAR_TABLE.out.table.map { table, _header -> [table, 'tab'] })
-    // combine() returns a queue channel even for single-value inputs; first() turns it back
-    // into a value channel so every sample is annotated (without it only one sample ran).
+    // combine() returns a queue channel even for single-value inputs. Without turning it
+    // into a value channel only the first sample was annotated, so the size is checked.
     clinvar_annotation = TABIX_CLINVAR.out.indexed
         .combine(CVNF_CLINVAR_TABLE.out.table.map { _table, header -> header })
-        .first()
+        .toList()
+        .map { items ->
+            if (items.size() != 1) {
+                error("expected one ClinVar annotation table, got ${items.size()}")
+            }
+            items[0]
+        }
 
     if (params.prefilter_panel) {
         BCFTOOLS_PREFILTER(validated, CVNF_PANEL_PAD.out.bed)
@@ -48,8 +60,17 @@ workflow ANNOTATE {
 
     BCFTOOLS_NORM(to_normalise, fasta)
     BCFTOOLS_ANNOTATE(BCFTOOLS_NORM.out.vcf, clinvar_annotation, gnomad, TABIX_PANEL.out.indexed)
-    CVNF_FILTER(BCFTOOLS_ANNOTATE.out.panel)
-    CVNF_REPORT(CVNF_FILTER.out.table, panel)
+    CVNF_FILTER(BCFTOOLS_ANNOTATE.out.panel, cvnf_src)
+    CVNF_REPORT(CVNF_FILTER.out.table, panel, cvnf_src)
+
+    // Every input sample must reach the report.
+    expected_ids = samples.map { meta, _vcf, _tbi -> meta.id }.toSortedList().map { ids -> [ids] }
+    reported_ids = CVNF_REPORT.out.json.map { meta, _json -> meta.id }.toSortedList().map { ids -> [ids] }
+    expected_ids.combine(reported_ids).map { expected, reported ->
+        if (expected != reported) {
+            error("samples in: ${expected}; samples reported: ${reported}")
+        }
+    }
 
     versions = versions.mix(
         CVNF_VALIDATE.out.versions, CVNF_PANEL_PAD.out.versions, TABIX_PANEL.out.versions,
@@ -63,5 +84,6 @@ workflow ANNOTATE {
     table = CVNF_FILTER.out.table
     report = CVNF_REPORT.out.report
     summary = CVNF_REPORT.out.json
+    gene_summary = CVNF_REPORT.out.summary
     versions = versions
 }

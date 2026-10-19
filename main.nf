@@ -9,6 +9,7 @@ include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin
 include { ANNOTATE } from './workflows/annotate'
 include { CLINVAR_DIFF } from './workflows/diff'
 include { CVNF_MANIFEST } from './modules/local/cvnf_manifest'
+include { CVNF_OUTPUT_HASHES } from './modules/local/cvnf_output_hashes'
 
 // Reads the commit from .git when the pipeline runs from a local clone; Nextflow only
 // fills workflow.commitId for pipelines pulled from a remote.
@@ -41,6 +42,8 @@ workflow {
     def params_json = file("${workflow.workDir}/params.${workflow.sessionId}.json")
     params_json.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(params))
     def containers = groovy.json.JsonOutput.toJson(workflow.containerEngine ? workflow.container : [:])
+    // Staged into every cvnf task, so editing the Python source invalidates those tasks on -resume.
+    cvnf_src = channel.value(files("${projectDir}/src/cvnf/*.py"))
 
     if (params.mode == 'annotate') {
         samples = channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
@@ -49,8 +52,13 @@ workflow {
         clinvar = channel.value([file(params.clinvar), file("${params.clinvar}.tbi")])
         gnomad = channel.value([file(params.gnomad), file("${params.gnomad}.tbi")])
         panel = channel.value(file(params.panel))
-        ANNOTATE(samples, fasta, clinvar, gnomad, panel)
+        ANNOTATE(samples, fasta, clinvar, gnomad, panel, cvnf_src)
         versions = ANNOTATE.out.versions
+        outputs = ANNOTATE.out.annotated.flatMap { _meta, vcf, tbi -> [vcf, tbi] }
+            .mix(ANNOTATE.out.table.map { _meta, table -> table })
+            .mix(ANNOTATE.out.report.flatMap { _meta, md, html -> [md, html] })
+            .mix(ANNOTATE.out.summary.map { _meta, json -> json })
+            .mix(ANNOTATE.out.gene_summary.map { _meta, tsv -> tsv })
         inputs = samples.flatMap { _meta, vcf, _tbi -> [vcf] }
             .mix(channel.of(file(params.fasta), file(params.clinvar), file(params.gnomad), file(params.panel)))
     } else {
@@ -59,8 +67,11 @@ workflow {
             ['new', params.clinvar_new_label, file(params.clinvar_new), file("${params.clinvar_new}.tbi")],
         )
         genes = channel.value(file(params.diff_genes))
-        CLINVAR_DIFF(releases, genes)
+        CLINVAR_DIFF(releases, genes, cvnf_src)
         versions = CLINVAR_DIFF.out.versions
+        outputs = CLINVAR_DIFF.out.report.flatMap { md, html -> [md, html] }
+            .mix(CLINVAR_DIFF.out.json.map { _scope, json -> json })
+            .mix(CLINVAR_DIFF.out.changes.map { _scope, changes -> changes })
         inputs = channel.of(file(params.clinvar_old), file(params.clinvar_new), file(params.diff_genes))
     }
 
@@ -69,26 +80,18 @@ workflow {
         .collectFile(name: 'software_versions.yml', storeDir: "${params.outdir}/pipeline_info", sort: true)
 
     // The manifest task starts as soon as the inputs are known, before the analysis steps finish.
-    CVNF_MANIFEST(inputs.collect(), params_json, gitCommit(), containers, workflow.start.toString())
+    CVNF_MANIFEST(inputs.collect(), params_json, gitCommit(), containers, workflow.start.toString(), cvnf_src)
+    CVNF_OUTPUT_HASHES(outputs.collect(), cvnf_src)
 }
 
 // Called by the onComplete handler after success and after failure, so a failed run
 // still leaves a summary next to its trace: status, duration, task counts, the error,
-// and every published file with SHA-256.
+// and the SHA-256 of each file this run produced.
 def writeRunSummary() {
-    def outdir = file(params.outdir)
-    def outputs = [:]
-    if (outdir.exists()) {
-        outdir.eachFileRecurse { f ->
-            if (f.isFile() && !f.name.startsWith('execution_') && f.name != 'run_summary.json') {
-                def digest = java.security.MessageDigest.getInstance('SHA-256')
-                f.withInputStream { stream ->
-                    stream.eachByte(65536) { buffer, n -> digest.update(buffer, 0, n) }
-                }
-                outputs[outdir.relativize(f).toString()] = digest.digest().encodeHex().toString()
-            }
-        }
-    }
+    // Written by CVNF_OUTPUT_HASHES from this run's output channels; absent if the run
+    // failed before that step.
+    def hashes = file("${params.outdir}/pipeline_info/outputs.sha256.json")
+    def outputs = hashes.exists() ? new groovy.json.JsonSlurper().parseText(hashes.text) : [:]
     def stats = workflow.stats
     def summary = [
         status: workflow.success ? 'success' : 'failed',
@@ -102,7 +105,7 @@ def writeRunSummary() {
                 ignored: stats.ignoredCount, retried: stats.retriesCount],
         error: workflow.errorMessage ?: null,
         trace: "${params.outdir}/pipeline_info/execution_trace.txt",
-        outputs: outputs.sort(),
+        outputs: outputs,
     ]
     def target = file("${params.outdir}/pipeline_info/run_summary.json")
     target.parent.mkdirs()

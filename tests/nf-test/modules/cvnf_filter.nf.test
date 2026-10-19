@@ -13,6 +13,7 @@ nextflow_process {
             process {
                 """
                 input[0] = [[id: 'S1'], file("${projectDir}/tests/data/mock/missing_clinvar_fields.vcf")]
+                input[1] = files("${projectDir}/src/cvnf/*.py")
                 """
             }
         }

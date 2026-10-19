@@ -7,6 +7,7 @@ workflow CLINVAR_DIFF {
     take:
     releases  // channel: [ role ('old' or 'new'), label, vcf, tbi ]
     genes     // value: path to a gene symbol list
+    cvnf_src  // value: list of src/cvnf/*.py
 
     main:
     CLINVAR_QUERY_SORTED(releases)
@@ -15,11 +16,12 @@ workflow CLINVAR_DIFF {
     new_table = queried.filter { role, _label, _tsv -> role == 'new' }.map { _role, label, tsv -> [label, tsv] }
     tables = old_table.combine(new_table).first()
 
-    CVNF_DIFF_ALL(tables, channel.value(['all', file("${projectDir}/assets/NO_GENES")]))
-    CVNF_DIFF_PANEL(tables, genes.map { g -> ['panel', g] })
+    CVNF_DIFF_ALL(tables, channel.value(['all', file("${projectDir}/assets/NO_GENES")]), cvnf_src)
+    CVNF_DIFF_PANEL(tables, genes.map { g -> ['panel', g] }, cvnf_src)
     CVNF_DIFF_REPORT(
         CVNF_DIFF_ALL.out.json.map { _scope, json -> json },
         CVNF_DIFF_PANEL.out.json.map { _scope, json -> json },
+        cvnf_src,
     )
 
     versions = CLINVAR_QUERY_SORTED.out.versions.mix(
@@ -28,5 +30,7 @@ workflow CLINVAR_DIFF {
 
     emit:
     report = CVNF_DIFF_REPORT.out.report
+    json = CVNF_DIFF_ALL.out.json.mix(CVNF_DIFF_PANEL.out.json)
+    changes = CVNF_DIFF_ALL.out.changes.mix(CVNF_DIFF_PANEL.out.changes)
     versions = versions
 }

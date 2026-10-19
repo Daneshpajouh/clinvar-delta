@@ -9,6 +9,7 @@ nextflow_process {
                 """
                 input[0] = file("${projectDir}/tests/data/panel.bed")
                 input[1] = 1000
+                input[2] = files("${projectDir}/src/cvnf/*.py")
                 """
             }
         }

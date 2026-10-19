@@ -6,6 +6,7 @@ process CVNF_PANEL_PAD {
     input:
     path bed
     val pad
+    path cvnf_src, stageAs: 'cvnf_pkg/cvnf/*'
 
     output:
     path "panel.padded.bed", emit: bed
@@ -13,11 +14,11 @@ process CVNF_PANEL_PAD {
 
     script:
     """
-    cvnf panel-pad --bed ${bed} --pad ${pad} --out panel.padded.bed
+    PYTHONPATH=cvnf_pkg python3 -m cvnf panel-pad --bed ${bed} --pad ${pad} --out panel.padded.bed
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cvnf: \$(cvnf --version | cut -d' ' -f2)
+        cvnf: \$(PYTHONPATH=cvnf_pkg python3 -m cvnf --version | cut -d' ' -f2)
     END_VERSIONS
     """
 

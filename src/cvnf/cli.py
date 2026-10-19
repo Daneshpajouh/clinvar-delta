@@ -417,6 +417,16 @@ def cmd_manifest(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_hash_files(args: argparse.Namespace) -> int:
+    hashes = {
+        Path(item).name: {"sha256": sha256(Path(item)), "bytes": Path(item).stat().st_size}
+        for item in sorted(args.files)
+    }
+    write_text(args.out, to_json(hashes))
+    info("hash files", files=len(hashes))
+    return 0
+
+
 def cmd_profile_usage(args: argparse.Namespace) -> int:
     with open_text(args.trace) as handle:
         tasks = read_trace(handle)
@@ -578,6 +588,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", required=True)
     p.add_argument("inputs", nargs="*")
     p.set_defaults(func=cmd_manifest)
+
+    p = sub.add_parser("hash-files", help="SHA-256 and size of each file, as JSON")
+    p.add_argument("--out", required=True)
+    p.add_argument("files", nargs="+")
+    p.set_defaults(func=cmd_hash_files)
 
     p = sub.add_parser("profile-usage", help="requested versus used resources from a trace")
     p.add_argument("--trace", required=True)
