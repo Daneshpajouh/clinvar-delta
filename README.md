@@ -9,19 +9,20 @@ A Nextflow pipeline that does two things with ClinVar:
    changed: reclassifications (for example VUS to likely pathogenic), changes in review
    level, new and withdrawn records, and changes that are only re-annotation by ClinVar.
 
-## Why the second part matters
+## Reclassification audit
 
 ClinVar is updated every week. A variant reported as "uncertain" to a patient last year
 may now be "likely pathogenic", and the reverse also happens. Between the 2025-10-13 and
-2026-10-11 releases, 40,961 variants moved to a different classification group; in the
-81 ACMG genes alone, 183 went from VUS to P/LP and 69 went from P/LP to VUS. A lab that
+2026-10-11 releases, 40,961 variants moved to a different classification group, 19,907 of
+them from VUS to conflicting; in the 81 ACMG genes, 183 went from VUS to P/LP and 69 went
+from P/LP to VUS. A lab that
 re-checks its past reports needs exactly this list, with the assertion changes separated
 from ClinVar's own re-annotation. [docs/explainer.md](docs/explainer.md) covers the
 background for readers who do not work with ClinVar.
 
-## Quick start (about 2 minutes)
+## Quick start
 
-Needs Nextflow 25.04.0 or newer and Java 17 or newer, plus either Docker or these tools
+Needs Nextflow 25.04.0 or newer and Java 17 or newer. Without containers, also these tools
 on PATH: bcftools and tabix (checked with 1.16 on Debian 12 and 1.23 on macOS), Python
 3.11 or newer, and on Linux `procps`, because Nextflow runs `ps` in every task to record
 metrics and the task fails without it.
@@ -29,23 +30,25 @@ metrics and the task fails without it.
 ```bash
 git clone https://github.com/Daneshpajouh/clinvar-variant-nf.git
 cd clinvar-variant-nf
-make image        # builds ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.1 locally
 
 # Annotate two bundled samples: real HG002 records in BRCA1, BRCA2 and TP53, and one synthetic sample
-nextflow run . -profile test,docker --outdir results
+nextflow run . -profile test --outdir results
 # ...
 # [SUCCESS] completed=18 failed=0 cached=0
 
 # Compare the bundled cuts of two ClinVar releases
-nextflow run . -profile test_diff,docker --outdir results_diff
+nextflow run . -profile test_diff --outdir results_diff
 
 ls results/report results_diff/clinvar_diff
 ```
 
-Without Docker, use `-profile test`; `bin/cvnf` runs the Python tools from the checkout.
+Each run took about 3 s on a clean Debian 12 container and on an Apple M-series Mac,
+after Nextflow downloads the nf-schema plugin on first use. `bin/cvnf` runs the Python
+tools from the checkout.
 
-On the development machine (Apple M-series Mac, Docker Desktop, 2026-10-19) the two test
-runs took 12.6 s and 8.8 s.
+With Docker instead of local tools, build the tools image once (`make image`; it is not
+yet on ghcr.io) and add the profile: `-profile test,docker`. That run took 12.6 s on the
+Mac.
 
 ## Real-data results
 

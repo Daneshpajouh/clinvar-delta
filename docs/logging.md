@@ -3,7 +3,7 @@
 Examples are from `nextflow run . -profile test -ansi-log false --outdir results_test2`
 on 2026-10-19.
 
-## Before
+## Run manifest
 
 `pipeline_info/run_manifest.json` is written by the first task to start (CVNF_MANIFEST
 needs only the input list): SHA-256 and size of every input, all parameters, the git
@@ -16,7 +16,7 @@ commit, the Nextflow version, the run start time and the container image per too
 "inputs": {"clinvar_20261011.subset.vcf.gz": {"bytes": 644594, "sha256": "..."}}
 ```
 
-## During
+## Task logs and progress
 
 - `-ansi-log false` prints one line per task as it is submitted, for example
   `[PROCESS 27/339e47] ANNOTATE:CVNF_REPORT (SYNTH01)`.
@@ -36,7 +36,7 @@ commit, the Nextflow version, the run start time and the container image per too
 {"command": "filter", "error": "line 4: expected 8+ tab-separated columns with a numeric POS", "event": "failed", "inputs": ["tests/data/mock/malformed.vcf", ...], "level": "error", ...}
 ```
 
-## After
+## Run summary
 
 The workflow's `onComplete` handler writes `pipeline_info/run_summary.json` after success
 and after failure: status, start and end time, duration, task counts (succeeded, cached,

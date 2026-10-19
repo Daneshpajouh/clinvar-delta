@@ -14,7 +14,7 @@ classification. The main classifications are pathogenic, likely pathogenic, unce
 significance (VUS), likely benign and benign. The 2026-10-11 release used here has
 4,594,764 records.
 
-## Why review stars matter
+## Review stars
 
 Not every classification carries the same weight. ClinVar gives each record zero to four
 stars for how it was reviewed:
@@ -57,8 +57,8 @@ gnomAD counts how often each variant appears in about 76,000 sequenced genomes (
 A variant carried by more than 1% of people is unlikely to cause a rare, severe disease,
 so the pipeline excludes P/LP variants above a configurable frequency (default 1%).
 
-## What this pipeline does not do
+## Limits
 
-It does not diagnose anyone. It does not interpret variants that are not in ClinVar, check
-whether a variant fits the patient's condition, or replace a genetic counsellor. Its
-reports say so.
+The pipeline reports what ClinVar says about variants it already lists; it does not
+interpret other variants, judge whether a variant fits a patient's condition, or make a
+diagnosis, and its reports say so.

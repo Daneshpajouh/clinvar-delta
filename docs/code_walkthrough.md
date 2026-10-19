@@ -5,7 +5,8 @@ A suggested reading order for a reviewer, about 30 minutes.
 ## 1. `main.nf` (108 lines)
 
 Validates parameters with nf-schema, writes the parameters to a JSON file for the manifest,
-dispatches on `--mode`, and writes `run_summary.json` in `onComplete`. A single entry with a mode parameter, instead of `-entry`,
+dispatches on `--mode`, and writes `run_summary.json` from a `workflow.onComplete` handler
+(an `onComplete:` section would need Nextflow 25.10). A single entry with a mode parameter, instead of `-entry`,
 keeps one schema and one help text for both modes and lets nf-schema reject a wrong mode
 before any work starts. `gitCommit()` reads `.git/HEAD` because `workflow.commitId` is only
 set for pipelines pulled from a remote.
@@ -87,6 +88,7 @@ end-to-end, resume and stub runs. See testing.md.
   bcftools steps carry the heavy work.
 - bcftools over a VEP or SnpEff annotation: ClinVar and gnomAD matching needs exact allele
   matches, which `bcftools annotate` does after normalisation. Consequence annotation
-  (HGVS, transcript) is not part of v1.0.0.
-- One container per tool instead of one large image: smaller pulls and independent
-  version pins, at the cost of more container definitions.
+  (HGVS, transcript) is not part of v1.0.
+- Each tool has its own container, so bcftools can move to a new BioContainers build
+  without rebuilding the Python image. There are two images to pin and publish instead
+  of one.

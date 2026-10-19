@@ -1,4 +1,4 @@
-# Profiling: before, during and after a run
+# Profiling
 
 Every run writes `execution_trace.txt`, `execution_report.html` and
 `execution_timeline.html` to `results/pipeline_info/`. The trace has one row per task with
@@ -8,7 +8,7 @@ the request (`cpus`, `memory`, `time`) next to the measurement (`%cpu`, `peak_rs
 On macOS without a container engine Nextflow cannot read task metrics (it warns "Task
 runtime metrics are not reported"), so measured runs here use `-profile docker`.
 
-## Before submission: size the requests from a measured run
+## Sizing requests from a measured run
 
 ```bash
 cvnf profile-calibrate \
@@ -41,7 +41,7 @@ Calibrating from one input size assumes the next input is similar. For a differe
 a whole-genome run, measure again: the planned subsample calibration (1, 5 and 20 percent
 of the input, fitted against input size) is milestone 1.1 in ROADMAP.md.
 
-## During the run
+## Watching a running pipeline
 
 - `tail -f results/pipeline_info/execution_trace.txt` shows each task as it finishes,
   with its peak RSS and exit code.
@@ -50,7 +50,7 @@ of the input, fitted against input size) is milestone 1.1 in ROADMAP.md.
 - For a running job, `sstat -j <jobid>.batch --format=JobID,MaxRSS,AveCPU` gives the live
   peak memory of the batch step.
 
-## After the run
+## Requested versus used
 
 ```bash
 cvnf profile-usage --trace results/pipeline_info/execution_trace.txt \
