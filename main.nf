@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 /*
- * clinvar-variant-nf
+ * clinvar-delta
  *   --mode annotate : annotate germline VCFs with ClinVar and gnomAD, report a gene panel
  *   --mode diff     : compare two ClinVar releases (reclassified, added, removed)
  */
@@ -110,5 +110,5 @@ def writeRunSummary() {
     def target = file("${params.outdir}/pipeline_info/run_summary.json")
     target.parent.mkdirs()
     target.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(summary)) + "\n"
-    log.info("clinvar-variant-nf ${summary.status}: ${workflow.duration}, results in ${params.outdir}")
+    log.info("clinvar-delta ${summary.status}: ${workflow.duration}, results in ${params.outdir}")
 }

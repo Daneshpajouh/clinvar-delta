@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/Daneshpajouh/clinvar-variant-nf/main/assets/schema_input.json",
-    "title": "clinvar-variant-nf samplesheet",
+    "$id": "https://raw.githubusercontent.com/Daneshpajouh/clinvar-delta/main/assets/schema_input.json",
+    "title": "clinvar-delta samplesheet",
     "description": "One row per sample: a single-sample, bgzipped and indexed germline VCF on GRCh38 with chr-prefixed contigs.",
     "type": "array",
     "items": {

@@ -1,7 +1,7 @@
 # Targets used in CONTRIBUTING.md and CI. NFTEST and PYTHON can be overridden.
 PYTHON ?= .venv/bin/python
 NFTEST ?= nf-test
-IMAGE ?= ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.1
+IMAGE ?= ghcr.io/daneshpajouh/clinvar-delta:1.0.1
 
 .PHONY: venv lint typecheck test-unit test-pipeline nf-test shellcheck bats check docs image test test-docker test-linux
 

@@ -42,7 +42,7 @@ succeeded.
 
 ## 5. Stale tools image after a code change
 
-The real diff run used the `ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.0` image built
+The real diff run used the tools image tagged 1.0.0, built
 before a change to `cvnf diff-report`, so the report still had the old gene ordering.
 Nextflow's cache key includes the image name, not its content, so `-resume` would also
 have reused stale results. The image was rebuilt and the diff rerun without `-resume`.

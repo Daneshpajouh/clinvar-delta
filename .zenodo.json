@@ -1,5 +1,5 @@
 {
-    "title": "clinvar-variant-nf",
+    "title": "clinvar-delta",
     "description": "Nextflow pipeline for ClinVar panel reports on germline VCFs and for auditing changes between ClinVar releases.",
     "upload_type": "software",
     "license": "Apache-2.0",

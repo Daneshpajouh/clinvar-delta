@@ -1,5 +1,5 @@
 nextflow_pipeline {
-    name "clinvar-variant-nf test profile"
+    name "clinvar-delta test profile"
     script "../../../main.nf"
 
     test("annotate mode reports the synthetic sample") {

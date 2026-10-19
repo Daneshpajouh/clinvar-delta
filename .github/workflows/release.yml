@@ -29,12 +29,12 @@ jobs:
           context: .
           file: containers/Dockerfile
           push: true
-          tags: ghcr.io/daneshpajouh/clinvar-variant-nf:${{ github.ref_name }}
+          tags: ghcr.io/daneshpajouh/clinvar-delta:${{ github.ref_name }}
       - name: Release notes from CHANGELOG.md
         run: |
           version="${GITHUB_REF_NAME#v}"
           awk -v v="## ${version} " 'index($0, v) == 1 {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
-          printf '\nTools image: ghcr.io/daneshpajouh/clinvar-variant-nf@%s\n' "${{ steps.build.outputs.digest }}" >> notes.md
+          printf '\nTools image: ghcr.io/daneshpajouh/clinvar-delta@%s\n' "${{ steps.build.outputs.digest }}" >> notes.md
       - uses: softprops/action-gh-release@v2
         with:
           body_path: notes.md

@@ -402,7 +402,7 @@ def cmd_manifest(args: argparse.Namespace) -> int:
         if path.is_file():
             files[path.name] = {"sha256": sha256(path), "bytes": path.stat().st_size}
     manifest = {
-        "pipeline": "clinvar-variant-nf",
+        "pipeline": "clinvar-delta",
         "version": __version__,
         "run_started": args.started,
         "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),

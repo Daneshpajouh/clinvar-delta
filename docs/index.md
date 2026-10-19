@@ -1,4 +1,4 @@
-# clinvar-variant-nf
+# clinvar-delta
 
 Nextflow pipeline for ClinVar panel reports on germline VCFs and for auditing changes
 between ClinVar releases. Start with the [explainer](explainer.md) if ClinVar is new to

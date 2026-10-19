@@ -1,4 +1,4 @@
-# clinvar-variant-nf
+# clinvar-delta
 
 A Nextflow pipeline that does two things with ClinVar:
 
@@ -27,8 +27,8 @@ on PATH: bcftools and tabix (checked with 1.16 on Debian 12 and 1.23 on macOS), 
 metrics and the task fails without it.
 
 ```bash
-git clone https://github.com/Daneshpajouh/clinvar-variant-nf.git
-cd clinvar-variant-nf
+git clone https://github.com/Daneshpajouh/clinvar-delta.git
+cd clinvar-delta
 
 # Annotate two bundled samples: real HG002 records in BRCA1, BRCA2 and TP53, and one synthetic sample
 nextflow run . -profile test --outdir results

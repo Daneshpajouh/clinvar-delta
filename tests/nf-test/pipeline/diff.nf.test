@@ -1,5 +1,5 @@
 nextflow_pipeline {
-    name "clinvar-variant-nf diff mode"
+    name "clinvar-delta diff mode"
     script "../../../main.nf"
     profile "test_diff"
 

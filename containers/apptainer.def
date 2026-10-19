@@ -14,7 +14,7 @@ From: python:3.13-slim@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0
     cvnf --version
 
 %labels
-    org.opencontainers.image.source https://github.com/Daneshpajouh/clinvar-variant-nf
+    org.opencontainers.image.source https://github.com/Daneshpajouh/clinvar-delta
 
 %test
     cvnf --version

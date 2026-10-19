@@ -52,7 +52,7 @@ jobs:
           version: "0.9.5"
       - run: pip install -e '.[dev]'
       - name: Build the tools image used by the docker profile
-        run: docker build -f containers/Dockerfile -t ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.1 .
+        run: docker build -f containers/Dockerfile -t ghcr.io/daneshpajouh/clinvar-delta:1.0.1 .
       - name: Pipeline tests (test profile, diff profile, resume, stub run)
         run: pytest -m pipeline tests/pipeline
       - name: nf-test modules and pipeline

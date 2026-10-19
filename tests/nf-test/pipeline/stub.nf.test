@@ -1,5 +1,5 @@
 nextflow_pipeline {
-    name "clinvar-variant-nf stub run"
+    name "clinvar-delta stub run"
     script "../../../main.nf"
     options "-stub-run"
 

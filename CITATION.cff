@@ -1,10 +1,10 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "clinvar-variant-nf"
+title: "clinvar-delta"
 version: 1.0.1
 date-released: 2026-10-19
 license: Apache-2.0
-repository-code: "https://github.com/Daneshpajouh/clinvar-variant-nf"
+repository-code: "https://github.com/Daneshpajouh/clinvar-delta"
 authors:
   - family-names: Daneshpajouh
     given-names: Amir

@@ -54,7 +54,7 @@ it; see ROADMAP.md.
 | Profile | Use |
 |---|---|
 | `standard` | local executor, tools from PATH (bcftools and tabix 1.16 or newer, Python 3.11+, `procps` on Linux), up to 8 CPUs |
-| `docker` | BioContainers bcftools 1.23.1 pinned by digest; tools image `ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.1`, pinned by tag until the first release publishes it (build it locally with `make image`) |
+| `docker` | BioContainers bcftools 1.23.1 pinned by digest; tools image `ghcr.io/daneshpajouh/clinvar-delta:1.0.1`, pinned by tag until the first release publishes it (build it locally with `make image`) |
 | `apptainer` | same images through Apptainer (definition in `containers/apptainer.def`; not run in this release) |
 | `slurm` | Slurm executor; set `--slurm_queue` and `--slurm_cluster_options` |
 | `calibrated` | per-process requests from measured runs (`conf/calibrated.config`) |

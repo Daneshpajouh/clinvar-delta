@@ -1,5 +1,5 @@
-site_name: clinvar-variant-nf
-repo_url: https://github.com/Daneshpajouh/clinvar-variant-nf
+site_name: clinvar-delta
+repo_url: https://github.com/Daneshpajouh/clinvar-delta
 theme:
   name: material
 nav:

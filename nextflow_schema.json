@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/Daneshpajouh/clinvar-variant-nf/main/nextflow_schema.json",
-    "title": "clinvar-variant-nf parameters",
+    "$id": "https://raw.githubusercontent.com/Daneshpajouh/clinvar-delta/main/nextflow_schema.json",
+    "title": "clinvar-delta parameters",
     "description": "Annotate germline VCFs with ClinVar and gnomAD, report a gene panel, and compare ClinVar releases.",
     "type": "object",
     "$defs": {
