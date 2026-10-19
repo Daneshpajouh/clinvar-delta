@@ -36,8 +36,8 @@ def lookup_to_bed(lookup: dict[str, dict[str, object]], symbols: list[str]) -> l
         chrom = str(entry["seq_region_name"])
         start = int(str(entry["start"])) - 1
         end = int(str(entry["end"]))
-        rows.append((f"chr{chrom}", start, end, symbol))
-    order = {f"chr{c}": i for i, c in enumerate([*map(str, range(1, 23)), "X", "Y", "MT"])}
+        rows.append(("chrM" if chrom == "MT" else f"chr{chrom}", start, end, symbol))
+    order = {f"chr{c}": i for i, c in enumerate([*map(str, range(1, 23)), "X", "Y", "M"])}
     rows.sort(key=lambda r: (order.get(r[0], 99), r[1], r[2]))
     return [f"{c}\t{s}\t{e}\t{g}" for c, s, e, g in rows]
 
@@ -50,6 +50,11 @@ def read_lookup(path: Path) -> dict[str, dict[str, object]]:
 
 
 def pad_bed(lines: list[str], pad: int) -> list[str]:
+    """Pad intervals; starts stop at 0.
+
+    Ends are not capped at the contig length: bcftools treats the part of a region past
+    the end of a contig as empty, so capping would need the .fai and change nothing.
+    """
     out = []
     for line in lines:
         if not line.strip() or line.startswith(("#", "track")):

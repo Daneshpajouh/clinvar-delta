@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Iterator
 from dataclasses import asdict, dataclass
@@ -55,10 +56,10 @@ def clinvar_table(rows: Iterable[str]) -> Iterator[str]:
             yield pending[key][2]
         pending.clear()
 
-    for raw in rows:
+    for number, raw in enumerate(rows, start=1):
         cols = raw.rstrip("\n").split("\t")
         if len(cols) < 8:
-            continue
+            raise ValueError(f"row {number}: expected 8 tab-separated columns, got {len(cols)}")
         chrom, pos, ref, alt, vid, clnsig, revstat, geneinfo = cols[:8]
         if alt in {".", "*"}:
             continue
@@ -69,7 +70,8 @@ def clinvar_table(rows: Iterable[str]) -> Iterator[str]:
         group = classify(clnsig).group
         line = "\t".join([chrom, pos, ref, alt, vid, clnsig, revstat, str(stars), group, geneinfo])
         key = (chrom, pos, ref, alt)
-        rank = (-stars, int(vid) if vid.isdigit() else 0)
+        # A non-numeric ID sorts after every real one instead of winning ties.
+        rank = (-stars, int(vid) if vid.isdigit() else sys.maxsize)
         best = pending.get(key)
         if best is None or rank < (best[0], best[1]):
             pending[key] = (rank[0], rank[1], line)

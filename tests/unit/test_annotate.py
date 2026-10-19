@@ -1,3 +1,5 @@
+import pytest
+
 from cvnf.annotate import FilterParams, clinvar_table, evaluate, gene_summary, stars_breakdown
 from cvnf.vcf import VcfRecord
 
@@ -74,3 +76,17 @@ def test_gene_summary_lists_every_panel_gene() -> None:
     assert summary[0]["variants"] == 0
     assert summary[1]["plp_stars_2"] == 1
     assert stars_breakdown(rows)["reportable_by_stars"]["2"] == 1
+
+
+def test_clinvar_table_rejects_short_rows_with_their_number() -> None:
+    rows = [f"chr1\t100\tA\tG\t1\tBenign\t{SINGLE}\tG1:1\n", "chr1\t200\tC\n"]
+    with pytest.raises(ValueError, match="row 2: expected 8"):
+        list(clinvar_table(rows))
+
+
+def test_clinvar_table_non_numeric_id_loses_ties() -> None:
+    rows = [
+        f"chr1\t100\tA\tG\tnot_an_id\tPathogenic\t{SINGLE}\tG1:1\n",
+        f"chr1\t100\tA\tG\t99\tPathogenic\t{SINGLE}\tG1:1\n",
+    ]
+    assert next(iter(clinvar_table(rows))).split("\t")[4] == "99"

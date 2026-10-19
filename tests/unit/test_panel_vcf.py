@@ -30,8 +30,17 @@ def test_lookup_missing_symbol_raises() -> None:
         lookup_to_bed({}, ["BRCA1"])
 
 
-def test_pad_bed_clamps_at_zero() -> None:
+def test_pad_bed_clamps_start_at_zero_and_leaves_end_uncapped() -> None:
     assert pad_bed(["chr1\t50\t100\tG"], 100) == ["chr1\t0\t200\tG"]
+    # chrM is 16,569 bp; the end is left past it on purpose (see pad_bed).
+    assert pad_bed(["chrM\t16000\t16500\tMT-X"], 1000) == ["chrM\t15000\t17500\tMT-X"]
+
+
+def test_lookup_maps_mt_to_chrm() -> None:
+    lookup: dict[str, dict[str, object]] = {
+        "MT-ND1": {"seq_region_name": "MT", "start": 3307, "end": 4262},
+    }
+    assert lookup_to_bed(lookup, ["MT-ND1"]) == ["chrM\t3306\t4262\tMT-ND1"]
 
 
 @pytest.mark.parametrize(

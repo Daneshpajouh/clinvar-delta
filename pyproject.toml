@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cvnf"
-version = "1.0.0"
+version = "1.0.1"
 description = "Reporting, ClinVar release diff and job profiling tools for the clinvar-variant-nf pipeline"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -42,7 +42,7 @@ mypy_path = "src"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
-    "pipeline: runs Nextflow or Snakemake end to end on the bundled test data (slow)",
+    "pipeline: runs Nextflow end to end on the bundled test data (slow)",
     "docker: needs a running Docker daemon",
 ]
 addopts = "-ra --strict-markers"
