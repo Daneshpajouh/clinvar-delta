@@ -10,7 +10,6 @@ import csv
 import hashlib
 import json
 import os
-import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -113,7 +112,7 @@ def test_pipeline_info_written(annotate_run: Path) -> None:
 
 def test_resume_reuses_every_task_and_outputs_are_unchanged(annotate_run: Path) -> None:
     before = digests(annotate_run / "results")
-    result = nextflow(
+    nextflow(
         "-profile",
         PROFILE,
         "--input",
@@ -123,11 +122,13 @@ def test_resume_reuses_every_task_and_outputs_are_unchanged(annotate_run: Path) 
         "-resume",
         cwd=annotate_run,
     )
-    match = re.search(r"completed=(\d+) failed=0 cached=(\d+)", result.stdout)
-    assert match is not None
+    # Counts from the pipeline's own summary; the console summary line depends on the terminal.
+    summary = annotate_run / "results/pipeline_info/run_summary.json"
+    tasks = json.loads(summary.read_text())["tasks"]
+    assert tasks["failed"] == 0
     # Only the run manifest is rebuilt: it records this run's time and params file.
-    assert int(match.group(1)) == 1
-    assert int(match.group(2)) >= 16
+    assert tasks["succeeded"] == 1
+    assert tasks["cached"] >= 16
     assert digests(annotate_run / "results") == before
 
 
@@ -183,6 +184,9 @@ def test_resume_reruns_python_steps_after_a_source_change(tmp_path: Path) -> Non
     ).stdout.split()
     repo = tmp_path / "repo"
     for name in tracked:
+        # ls-files -o also lists untracked nested checkouts as directories (CI tool caches).
+        if not (ROOT / name).is_file():
+            continue
         dest = repo / name
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / name, dest)
