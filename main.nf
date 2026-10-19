@@ -30,6 +30,11 @@ def gitCommit() {
 
 workflow {
     main:
+    // A handler instead of an onComplete: section, which Nextflow 25.04 does not parse. The
+    // work happens in a script function: inside the closure, workflow and params resolve
+    // to the handler's delegate and are null.
+    workflow.onComplete { writeRunSummary() }
+
     validateParameters()
     log.info(paramsSummaryLog(workflow))
 
@@ -65,14 +70,11 @@ workflow {
 
     // The manifest task starts as soon as the inputs are known, before the analysis steps finish.
     CVNF_MANIFEST(inputs.collect(), params_json, gitCommit(), containers, workflow.start.toString())
-
-    onComplete:
-    writeRunSummary()
-    log.info("clinvar-variant-nf ${workflow.success ? 'completed' : 'failed'}: ${workflow.duration}, results in ${params.outdir}")
 }
 
-// Runs after success and after failure, so a failed run still leaves a summary next to its
-// trace: status, duration, task counts, the error, and every published file with SHA-256.
+// Called by the onComplete handler after success and after failure, so a failed run
+// still leaves a summary next to its trace: status, duration, task counts, the error,
+// and every published file with SHA-256.
 def writeRunSummary() {
     def outdir = file(params.outdir)
     def outputs = [:]
@@ -105,4 +107,5 @@ def writeRunSummary() {
     def target = file("${params.outdir}/pipeline_info/run_summary.json")
     target.parent.mkdirs()
     target.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(summary)) + "\n"
+    log.info("clinvar-variant-nf ${summary.status}: ${workflow.duration}, results in ${params.outdir}")
 }
