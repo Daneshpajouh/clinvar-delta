@@ -140,3 +140,18 @@ def test_markdown_row_keeps_its_columns_when_clnsig_has_a_pipe() -> None:
     ).splitlines()[2]
     assert row == "| HFE | Pathogenic\\|risk_factor | 2 |"
     assert row.replace("\\|", "").count("|") == 4
+
+
+@pytest.mark.parametrize(
+    ("info", "reportable"),
+    [
+        ({"gnomAD_AF": "0.01"}, True),  # the report says "at most 0.01"
+        ({"gnomAD_AF": "0.0101"}, False),
+        ({"CLNSTARS": "1"}, True),  # min_stars 1 is met by one star
+        ({"CLNSTARS": "0"}, False),
+    ],
+)
+def test_thresholds_are_inclusive(info: dict[str, str], reportable: bool) -> None:
+    row = evaluate(record({**BASE, **info}), "S1", FilterParams(min_stars=1, max_af=0.01))
+    assert row is not None
+    assert row.reportable is reportable
