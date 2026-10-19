@@ -5,6 +5,7 @@ from __future__ import annotations
 import html
 import json
 import re
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 # Rows on the NCBI page read "... MedGen C0000000 BRCA1 (MIM 113705) ClinVar ...".
@@ -49,6 +50,28 @@ def read_lookup(path: Path) -> dict[str, dict[str, object]]:
     return data
 
 
+class BedFormatError(ValueError):
+    pass
+
+
+def bed_intervals(lines: Iterable[str], source: str = "<panel>") -> Iterator[list[str]]:
+    """Yield the columns of each interval, skipping blank, '#', 'track' and 'browser' lines.
+
+    Column 4 becomes PANEL_GENE, so a line without a gene symbol is refused here, before
+    any work, instead of failing at the report step.
+    """
+    for number, line in enumerate(lines, start=1):
+        if not line.strip() or line.startswith(("#", "track", "browser")):
+            continue
+        cols = line.rstrip("\n").split("\t")
+        if len(cols) < 4 or not cols[1].isdigit() or not cols[2].isdigit() or not cols[3]:
+            raise BedFormatError(
+                f"{source}: line {number}: expected chrom, start, end and gene symbol "
+                f"separated by tabs, got {line.rstrip()!r}"
+            )
+        yield cols
+
+
 def pad_bed(lines: list[str], pad: int) -> list[str]:
     """Pad intervals; starts stop at 0.
 
@@ -56,10 +79,7 @@ def pad_bed(lines: list[str], pad: int) -> list[str]:
     the end of a contig as empty, so capping would need the .fai and change nothing.
     """
     out = []
-    for line in lines:
-        if not line.strip() or line.startswith(("#", "track")):
-            continue
-        chrom, start, end, *rest = line.rstrip("\n").split("\t")
+    for chrom, start, end, *rest in bed_intervals(lines):
         new_start = max(0, int(start) - pad)
         out.append("\t".join([chrom, str(new_start), str(int(end) + pad), *rest]))
     return out

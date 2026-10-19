@@ -33,7 +33,15 @@ from cvnf.diff import (
     diff_releases,
     parse_entries,
 )
-from cvnf.panel import acmg_symbols, lookup_to_bed, pad_bed, read_lookup, request_body
+from cvnf.panel import (
+    BedFormatError,
+    acmg_symbols,
+    bed_intervals,
+    lookup_to_bed,
+    pad_bed,
+    read_lookup,
+    request_body,
+)
 from cvnf.profiling import (
     calibrated_config,
     fmt_bytes,
@@ -82,6 +90,11 @@ def info(event: str, **fields: object) -> None:
 def read_lines(path: str) -> list[str]:
     with open_text(path) as handle:
         return [line.rstrip("\n") for line in handle if line.strip()]
+
+
+def read_bed(path: str) -> list[list[str]]:
+    with open_text(path) as handle:
+        return list(bed_intervals(handle, path))
 
 
 def write_text(path: str | Path, text: str) -> None:
@@ -151,7 +164,11 @@ def cmd_validate(args: argparse.Namespace) -> int:
             problems.append(f"VCF contigs missing from reference: {chrom}")
     except VcfFormatError as exc:
         problems.append(str(exc))
-    panel_contigs = {line.split("\t")[0] for line in read_lines(args.panel)}
+    try:
+        panel_contigs = {cols[0] for cols in read_bed(args.panel)}
+    except BedFormatError as exc:
+        problems.append(str(exc))
+        panel_contigs = set()
     if not panel_contigs <= fai:
         problems.append(
             f"panel contigs missing from reference: {', '.join(sorted(panel_contigs - fai))}"
@@ -196,7 +213,7 @@ def cmd_filter(args: argparse.Namespace) -> int:
 def cmd_report(args: argparse.Namespace) -> int:
     with open_text(args.table) as handle:
         rows = read_table(handle)
-    genes = [line.split("\t")[3] for line in read_lines(args.panel)]
+    genes = [cols[3] for cols in read_bed(args.panel)]
     summary = gene_summary(rows, genes)
     stars = stars_breakdown(rows)
     reportable = [r for r in rows if r["reportable"] == "yes"]
@@ -286,6 +303,9 @@ def cmd_report(args: argparse.Namespace) -> int:
 
 def cmd_diff(args: argparse.Namespace) -> int:
     genes = set(read_lines(args.genes)) if args.genes else None
+    if genes is not None and not genes:
+        # An empty list would drop every record and report it as a quiet release.
+        raise ValueError(f"{args.genes}: gene list is empty")
     stats = DiffStats()
     old_counts, new_counts = ParseCounts(), ParseCounts()
     with open_text(args.old) as old, open_text(args.new) as new, open_text(args.out, "w") as dst:
@@ -302,7 +322,7 @@ def cmd_diff(args: argparse.Namespace) -> int:
     data = {
         "old": args.old_label,
         "new": args.new_label,
-        "gene_filter": len(genes) if genes else None,
+        "gene_filter": len(genes) if genes is not None else None,
         "rows_read": {"old": old_counts.rows, "new": new_counts.rows},
         **stats.as_dict(),
     }

@@ -231,3 +231,75 @@ def test_validate_contig_style_of_every_input(  # noqa: PLR0917 (one parametrize
     )
     assert json.loads(out.read_text())["problems"] == ([problem] if problem else [])
     assert code == (1 if problem else 0)
+
+
+def validate_with_panel(tmp_path: Path, panel_text: str) -> tuple[int, dict[str, object]]:
+    panel = tmp_path / "panel.bed"
+    panel.write_text(panel_text)
+    out = tmp_path / "v.json"
+    code = run(
+        "validate",
+        "--sample",
+        "S1",
+        "--vcf",
+        str(MOCK / "multiallelic.vcf"),
+        "--fai",
+        str(MOCK / "reference.fa.fai"),
+        "--panel",
+        str(panel),
+        "--out",
+        str(out),
+    )
+    return code, json.loads(out.read_text())
+
+
+def test_validate_skips_ucsc_header_lines_in_the_panel(tmp_path: Path) -> None:
+    code, result = validate_with_panel(
+        tmp_path, 'track name="ACMG SF"\n# chrom start end gene\nchr1\t50\t300\tGENE1\n'
+    )
+    assert code == 0
+    assert result["panel_contigs"] == ["chr1"]
+
+
+def test_validate_refuses_a_panel_without_gene_symbols(tmp_path: Path) -> None:
+    code, result = validate_with_panel(tmp_path, "chr1\t50\t300\n")
+    assert code == 1
+    assert result["problems"] == [
+        f"{tmp_path / 'panel.bed'}: line 1: expected chrom, start, end and gene symbol "
+        "separated by tabs, got 'chr1\\t50\\t300'"
+    ]
+
+
+def test_report_reads_gene_names_past_a_track_line(tmp_path: Path) -> None:
+    table = tmp_path / "t.tsv"
+    run(
+        "filter",
+        "--sample",
+        "S1",
+        "--vcf",
+        str(MOCK / "missing_clinvar_fields.vcf"),
+        "--out",
+        str(table),
+    )
+    panel = tmp_path / "panel.bed"
+    panel.write_text("track name=panel\n" + (MOCK / "panel.bed").read_text())
+    paths = {k: tmp_path / f"r.{k}" for k in ("tsv", "json", "md", "html")}
+    code = run(
+        "report",
+        "--sample",
+        "S1",
+        "--table",
+        str(table),
+        "--panel",
+        str(panel),
+        "--summary",
+        str(paths["tsv"]),
+        "--json",
+        str(paths["json"]),
+        "--markdown",
+        str(paths["md"]),
+        "--html",
+        str(paths["html"]),
+    )
+    assert code == 0
+    assert json.loads(paths["json"].read_text())["panel_genes"] == 1

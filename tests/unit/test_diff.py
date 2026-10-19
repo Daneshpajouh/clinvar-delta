@@ -261,3 +261,35 @@ def test_cli_fails_on_malformed_row_and_names_it(
     assert code == 1
     error = json.loads(capsys.readouterr().err.strip().splitlines()[-1])
     assert error["error"].startswith(f"{old}: line 2: expected 8 tab-separated columns")
+
+
+def test_empty_gene_list_is_refused(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    # A panel file that lost its symbols would otherwise drop every record and report a
+    # release with no changes.
+    old = tmp_path / "old.tsv"
+    new = tmp_path / "new.tsv"
+    genes = tmp_path / "genes.txt"
+    old.write_text(row(1, "Pathogenic"))
+    new.write_text(row(1, "Benign"))
+    genes.write_text("\n\n")
+    code = main(
+        [
+            "diff",
+            "--old",
+            str(old),
+            "--new",
+            str(new),
+            "--old-label",
+            "o",
+            "--new-label",
+            "n",
+            "--genes",
+            str(genes),
+            "--out",
+            str(tmp_path / "d.tsv"),
+            "--json",
+            str(tmp_path / "d.json"),
+        ]
+    )
+    assert code == 1
+    assert "gene list is empty" in capsys.readouterr().err
