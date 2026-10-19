@@ -56,7 +56,7 @@ jobs:
       - name: Pipeline tests (test profile, diff profile, resume, stub run)
         run: pytest -m pipeline tests/pipeline
       - name: nf-test modules and pipeline
-        run: nf-test test tests/nf-test --profile test,docker
+        run: nf-test test tests/nf-test --profile +docker
 
   minimum-nextflow:
     # The declared minimum, with tools from apt and an empty plugin cache.
