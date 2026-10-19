@@ -45,8 +45,8 @@ of the input, fitted against input size) is milestone 1.1 in ROADMAP.md.
 
 - `tail -f results/pipeline_info/execution_trace.txt` shows each task as it finishes,
   with its peak RSS and exit code.
-- On Slurm, `squeue -u $USER -o '%i %j %T %M %l %m %C'` lists Nextflow's jobs (named
-  `nf-<PROCESS>_<tag>`) with elapsed time, limit, memory and CPUs.
+- On Slurm, `squeue -u $USER -o '%i %j %T %M %l %m %C'` lists Nextflow's jobs (names start
+  with `nf-` and the process name) with elapsed time, limit, memory and CPUs.
 - For a running job, `sstat -j <jobid>.batch --format=JobID,MaxRSS,AveCPU` gives the live
   peak memory of the batch step.
 

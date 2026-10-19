@@ -11,7 +11,7 @@
 | `--panel` | BED with chrom, start, end, gene symbol |
 
 `scripts/fetch_data.sh DATA_DIR giab clinvar reference panel gnomad` downloads all of
-these for HG002 and the ACMG SF v3.2 panel (about 1.6 GB) and records provenance.
+these for HG002 and the ACMG SF v3.2 panel (1.51 GB) and records provenance.
 
 ```bash
 D=/path/to/data

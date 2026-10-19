@@ -2,7 +2,7 @@
 
 All raw data sit in a data directory outside the repository (`DATA_DIR` below).
 `scripts/fetch_data.sh DATA_DIR STAGE...` downloaded them on 2026-10-19 and wrote one row per file to
-`DATA_DIR/provenance.tsv`. The table below is that file. Total downloaded: about 1.59 GB.
+`DATA_DIR/provenance.tsv`. The table below is that file. The files total 1.51 GB.
 
 Checks run after download: the two ClinVar files match their NCBI `.md5` files; the GIAB VCF MD5
 (`dc750b3807d4af1f7ffec852e9c2f771`) matches the value stored on the S3 object; all 23 UCSC
