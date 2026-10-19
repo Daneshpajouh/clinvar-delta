@@ -1,6 +1,6 @@
 # Results on real data
 
-All numbers on this page come from two runs on 2026-10-19 (Pacific time 11:31 to 11:43) on
+All numbers on this page come from two v1.0.0 runs on 2026-10-19 (Pacific time 11:31 to 11:43) on
 an Apple M-series Mac with Docker Desktop. `run_manifest.json` records commit `000f3b9` for
 the annotate run and `3496b41` for the diff run, and the bcftools image digest
 `sha256:8cf74dd0...3869`. Data are listed in [data_sources.md](data_sources.md).

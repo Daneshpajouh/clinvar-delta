@@ -2,9 +2,11 @@
 
 ## 1.0.1 (2026-10-19)
 
-- Needs Nextflow 26.04.0 or newer. nf-schema 2.8.0 again: with 2.5.1, numeric options
-  such as `--max_cpus 8` failed validation on Nextflow 26.10 as strings. The minimum is
-  2.8.0's own requirement; 2.8.0 is served only by the Nextflow plugin registry.
+- Needs Nextflow 26.04.0 or newer; 1.0.0 declared 25.04.0. Releases 25.04 to 26.03 are no
+  longer supported: 1.0.0's nf-schema 2.8.0 cannot be installed on 25.04 from an empty
+  plugin cache (it is served only by the plugin registry, read from 25.10.0), and its
+  manifest requires Nextflow 26.04.0. A pin to 2.5.1, tried during this release, made
+  numeric options such as `--max_cpus 8` fail validation on 26.10 as strings.
 - The run summary is a `workflow.onComplete` handler instead of an `onComplete:` section.
 - `scripts/test_linux.sh NXF_VER` runs both test profiles in a clean Debian 12 image from
   an empty plugin cache. The README lists `procps` and `tabix`; data terms are recorded as

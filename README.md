@@ -51,7 +51,7 @@ Mac.
 
 ## Real-data results
 
-From runs on 2026-10-19 (commands and full tables in [docs/results.md](docs/results.md)):
+From the v1.0.0 runs on 2026-10-19 (commands and full tables in [docs/results.md](docs/results.md)):
 
 | | |
 |---|---|

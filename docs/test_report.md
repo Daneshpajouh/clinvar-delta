@@ -15,6 +15,8 @@ Machine for the checks below: Apple M3 Ultra, macOS 27.0.1, Nextflow 26.10.2, Py
 | ruff, mypy, docs build | `make lint typecheck docs` | [CONFIRM: run at the release check] |
 | clean Debian, minimum Nextflow | `scripts/test_linux.sh 26.04.0` | [CONFIRM: run at the release check] |
 | clean Debian, current Nextflow | `scripts/test_linux.sh 26.10.2` | [CONFIRM: run at the release check] |
+| Docker test profiles | `make image`, then `-profile test,docker` and `-profile test_diff,docker` | [CONFIRM: run at the release check; no Docker access on this machine's account] |
+| Linux unit check | `python:3.13-slim` container: ruff, mypy, pytest tests/unit | [CONFIRM: run at the release check] |
 | real diff run | see results.md | [CONFIRM: rerun for the v1.0.1 gene rules] |
 
 The real annotate run in results.md is from v1.0.0. v1.0.1 takes review stars from

@@ -31,9 +31,9 @@ def gitCommit() {
 
 workflow {
     main:
-    // A handler instead of an onComplete: section, which Nextflow 25.04 does not parse. The
-    // work happens in a script function: inside the closure, workflow and params resolve
-    // to the handler's delegate and are null.
+    // A handler instead of an onComplete: section, which Nextflow before 25.10 does not
+    // parse; it works on every supported release. The work happens in a script function:
+    // inside the closure, workflow and params resolve to the handler's delegate and are null.
     workflow.onComplete { writeRunSummary() }
 
     validateParameters()
