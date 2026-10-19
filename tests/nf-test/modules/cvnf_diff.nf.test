@@ -16,6 +16,7 @@ nextflow_process {
             assert process.success
             def stats = path(process.out.json[0][1]).json
             assert stats.changes == [added: 1, annotation_only: 1, reclassified: 1, removed: 1]
+            assert stats.rows_skipped == [old: 0, new: 0]
             assert snapshot(process.out.changes, process.out.json).match()
         }
     }
