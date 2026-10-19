@@ -47,9 +47,10 @@ Each run took about 3 s on a clean Debian 12 container and on an Apple M-series 
 after Nextflow downloads the nf-schema plugin on first use. `bin/cvnf` runs the Python
 tools from the checkout.
 
-With Docker instead of local tools, build the tools image once (`make image`; it is not
-yet on ghcr.io) and add the profile: `-profile test,docker`. That run took 12.6 s on the
-Mac.
+With Docker instead of local tools, add the profile: `-profile test,docker`. The tools
+image `ghcr.io/daneshpajouh/clinvar-delta:1.0.1` is pulled on first use (`make image`
+builds it locally instead). On 2026-10-19 the test profile ran this way from the published
+image in 20 s on the Mac, 19 tasks.
 
 ## Real-data results
 
