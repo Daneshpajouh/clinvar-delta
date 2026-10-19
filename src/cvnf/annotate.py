@@ -41,15 +41,17 @@ TABLE_COLUMNS = (
 )
 
 
-def clinvar_table(rows: Iterable[str]) -> Iterator[str]:
+def clinvar_table(rows: Iterable[str], source: str = "<input>") -> Iterator[str]:
     """Turn `bcftools query` rows into a bcftools annotate table.
 
     Input columns: CHROM POS REF ALT ID CLNSIG CLNREVSTAT GENEINFO, sorted by position.
     When two ClinVar records describe the same allele after normalisation, the one with
     more review stars wins (then the lower Variation ID), so annotation is deterministic.
+    Duplicates can only be merged when they are adjacent, so unsorted input is refused.
     """
     pending: dict[tuple[str, str, str, str], tuple[int, int, str]] = {}
-    current: tuple[str, str] | None = None
+    current: tuple[str, int] | None = None
+    finished_chroms: set[str] = set()
 
     def flush() -> Iterator[str]:
         for key in sorted(pending):
@@ -57,15 +59,30 @@ def clinvar_table(rows: Iterable[str]) -> Iterator[str]:
         pending.clear()
 
     for number, raw in enumerate(rows, start=1):
+        if not raw.strip() or raw.startswith("#"):
+            continue
         cols = raw.rstrip("\n").split("\t")
-        if len(cols) < 8:
-            raise ValueError(f"row {number}: expected 8 tab-separated columns, got {len(cols)}")
-        chrom, pos, ref, alt, vid, clnsig, revstat, geneinfo = cols[:8]
+        if len(cols) != 8 or not cols[1].isdigit():
+            raise ValueError(
+                f"{source}: line {number}: expected 8 tab-separated columns with a numeric "
+                f"POS, got {len(cols)}"
+            )
+        chrom, pos, ref, alt, vid, clnsig, revstat, geneinfo = cols
         if alt in {".", "*"}:
             continue
-        if current != (chrom, pos):
+        position = (chrom, int(pos))
+        if current is None or position != current:
+            if current is not None and (
+                chrom in finished_chroms or (chrom == current[0] and position[1] < current[1])
+            ):
+                raise ValueError(
+                    f"{source}: line {number}: {chrom}:{pos} comes after "
+                    f"{current[0]}:{current[1]}; input must be sorted by position"
+                )
+            if current is not None and chrom != current[0]:
+                finished_chroms.add(current[0])
             yield from flush()
-            current = (chrom, pos)
+            current = position
         stars = review_stars(revstat)
         group = classify(clnsig).group
         line = "\t".join([chrom, pos, ref, alt, vid, clnsig, revstat, str(stars), group, geneinfo])
@@ -116,17 +133,34 @@ class FilterParams:
 def _float_or_none(value: str | None) -> float | None:
     if value in {None, "", "."}:
         return None
-    return float(str(value).split(",")[0])
+    return float(str(value))
+
+
+def record_stars(info: dict[str, str]) -> int:
+    """Stars from CLNREVSTAT when present, else from CLNSTARS; absent, empty or '.' gives 0."""
+    revstat = info.get("CLNREVSTAT", "")
+    if revstat not in {"", "."}:
+        return review_stars(revstat)
+    stars = info.get("CLNSTARS", "")
+    return int(stars) if stars.isdigit() else 0
 
 
 def evaluate(record: VcfRecord, sample: str, params: FilterParams) -> PanelVariant | None:
-    """Return the panel row for a record, or None when it lies outside the panel."""
+    """Return the panel row for a record, or None when it lies outside the panel.
+
+    Records must be biallelic: an unsplit multiallelic site would pair the first gnomAD
+    frequency with every ALT allele, so it is refused instead of being guessed.
+    """
     panel_gene = record.info.get("PANEL_GENE")
     if not panel_gene:
         return None
+    if "," in record.alt or "," in record.info.get("gnomAD_AF", ""):
+        raise ValueError(
+            f"{record.key}: multiallelic record; split with bcftools norm -m -any first"
+        )
     clnsig = record.info.get("CLNSIG", ".")
     cls = classify(clnsig)
-    stars = int(record.info["CLNSTARS"]) if "CLNSTARS" in record.info else 0
+    stars = record_stars(record.info)
     af = _float_or_none(record.info.get("gnomAD_AF"))
     reasons = []
     if cls.group is not Group.PLP:

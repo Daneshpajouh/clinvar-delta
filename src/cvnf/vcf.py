@@ -89,17 +89,19 @@ class VcfFormatError(ValueError):
     pass
 
 
-def _records(lines: Iterator[str], n_samples: int, offset: int) -> Iterator[VcfRecord]:
+def _records(lines: Iterator[str], n_samples: int, offset: int, source: str) -> Iterator[VcfRecord]:
+    expected = 10 if n_samples else 8
     for number, line in enumerate(lines, start=offset + 1):
         if not line.strip():
             continue
         cols = line.rstrip("\n").split("\t")
-        if len(cols) < 8 or not cols[1].isdigit():
+        if len(cols) != expected or not cols[1].isdigit():
             raise VcfFormatError(
-                f"line {number}: expected 8+ tab-separated columns with a numeric POS"
+                f"{source}: line {number}: expected {expected} tab-separated columns "
+                f"with a numeric POS, got {len(cols)}"
             )
         sample: dict[str, str] = {}
-        if n_samples and len(cols) > 9:
+        if n_samples:
             sample = dict(zip(cols[8].split(":"), cols[9].split(":"), strict=False))
         yield VcfRecord(
             chrom=cols[0],
@@ -114,23 +116,28 @@ def _records(lines: Iterator[str], n_samples: int, offset: int) -> Iterator[VcfR
         )
 
 
-def read_vcf(handle: TextIO) -> VcfFile:
-    """Read the header eagerly and return a lazy record iterator."""
+def read_vcf(handle: TextIO, source: str = "<input>") -> VcfFile:
+    """Read the header eagerly and return a lazy record iterator.
+
+    The pipeline is single-sample by design, so a VCF with more than one sample column is
+    refused here rather than having its later samples ignored.
+    """
     header: list[str] = []
-    samples: list[str] = []
+    samples: list[str] | None = None
     for line in handle:
         if not line.startswith("#"):
-            raise VcfFormatError("no #CHROM header line before the first record")
-        if line.startswith("##"):
-            header.append(line.rstrip("\n"))
-            continue
+            break
+        header.append(line.rstrip("\n"))
         if line.startswith("#CHROM"):
-            header.append(line.rstrip("\n"))
             samples = line.rstrip("\n").split("\t")[9:]
             break
     if not header:
-        raise VcfFormatError("empty file: no VCF header")
-    records = _records(iter(handle), len(samples), offset=len(header))
+        raise VcfFormatError(f"{source}: empty file, no VCF header")
+    if samples is None:
+        raise VcfFormatError(f"{source}: no #CHROM header line")
+    if len(samples) > 1:
+        raise VcfFormatError(f"{source}: {len(samples)} samples; one sample per VCF expected")
+    records = _records(iter(handle), len(samples), offset=len(header), source=source)
     return VcfFile(header=header, samples=samples, records=records)
 
 

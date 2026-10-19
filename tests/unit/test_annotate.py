@@ -80,7 +80,7 @@ def test_gene_summary_lists_every_panel_gene() -> None:
 
 def test_clinvar_table_rejects_short_rows_with_their_number() -> None:
     rows = [f"chr1\t100\tA\tG\t1\tBenign\t{SINGLE}\tG1:1\n", "chr1\t200\tC\n"]
-    with pytest.raises(ValueError, match="row 2: expected 8"):
+    with pytest.raises(ValueError, match=r"<input>: line 2: expected 8 .* got 3"):
         list(clinvar_table(rows))
 
 
@@ -90,3 +90,44 @@ def test_clinvar_table_non_numeric_id_loses_ties() -> None:
         f"chr1\t100\tA\tG\t99\tPathogenic\t{SINGLE}\tG1:1\n",
     ]
     assert next(iter(clinvar_table(rows))).split("\t")[4] == "99"
+
+
+@pytest.mark.parametrize(
+    "positions",
+    [[("chr1", 100), ("chr1", 101), ("chr1", 100)], [("chr1", 5), ("chr2", 5), ("chr1", 9)]],
+    ids=["position revisited", "chromosome revisited"],
+)
+def test_clinvar_table_rejects_unsorted_input(positions: list[tuple[str, int]]) -> None:
+    rows = [f"{c}\t{p}\tA\tG\t{i}\tBenign\t{SINGLE}\tG1:1\n" for i, (c, p) in enumerate(positions)]
+    with pytest.raises(ValueError, match=r"line 3: .* input must be sorted by position"):
+        list(clinvar_table(rows))
+
+
+@pytest.mark.parametrize(
+    ("info", "stars"),
+    [
+        ({"CLNSTARS": "."}, 0),
+        ({"CLNSTARS": ""}, 0),
+        ({}, 0),
+        ({"CLNSTARS": "1", "CLNREVSTAT": EXPERT}, 3),
+        ({"CLNSTARS": "2"}, 2),
+    ],
+    ids=["dot", "empty", "absent", "revstat wins", "stars only"],
+)
+def test_stars_when_fields_are_missing(info: dict[str, str], stars: int) -> None:
+    row = evaluate(
+        record({"PANEL_GENE": "BRCA2", "CLNSIG": "Pathogenic", **info}), "S1", FilterParams()
+    )
+    assert row is not None
+    assert row.stars == stars
+
+
+@pytest.mark.parametrize(
+    ("alt", "info"),
+    [("G,T", {}), ("G", {"gnomAD_AF": "0.1,0.2"})],
+    ids=["two ALT alleles", "vector AF"],
+)
+def test_unsplit_multiallelic_records_are_refused(alt: str, info: dict[str, str]) -> None:
+    rec = VcfRecord("chr13", 1000, ".", "A", alt, "50", "PASS", {**BASE, **info}, {"GT": "0/1"})
+    with pytest.raises(ValueError, match=r"chr13:1000:A:.*multiallelic record"):
+        evaluate(rec, "S1", FilterParams())

@@ -45,7 +45,7 @@ from cvnf.profiling import (
     summarise,
 )
 from cvnf.report import render
-from cvnf.vcf import header_contigs, open_text, read_vcf
+from cvnf.vcf import VcfFormatError, open_text, read_vcf
 
 log = logging.getLogger("cvnf")
 
@@ -119,7 +119,7 @@ def cmd_panel_pad(args: argparse.Namespace) -> int:
 def cmd_clinvar_table(args: argparse.Namespace) -> int:
     count = 0
     with open_text(args.input) as src, open_text(args.out, "w") as dst:
-        for line in clinvar_table(src):
+        for line in clinvar_table(src, args.input):
             dst.write(line + "\n")
             count += 1
     write_text(args.header, CLINVAR_HEADER)
@@ -127,31 +127,45 @@ def cmd_clinvar_table(args: argparse.Namespace) -> int:
     return 0
 
 
+def first_record_contig(path: str) -> tuple[list[str], str | None]:
+    with open_text(path) as handle:
+        vcf = read_vcf(handle, path)
+        first = next(vcf.records, None)
+    return vcf.samples, first.chrom if first else None
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
-    """Check contig naming between the sample VCF, reference and panel before any work."""
+    """Check contig naming of every input against the reference before any work.
+
+    A naming mismatch (chr1 against 1) makes bcftools skip regions or annotations
+    without an error, so it is caught here.
+    """
     fai = {line.split("\t")[0] for line in read_lines(args.fai)}
     problems: list[str] = []
-    with open_text(args.vcf) as handle:
-        vcf = read_vcf(handle)
-        contigs = header_contigs(vcf.header)
-        first = next(vcf.records, None)
-    if len(vcf.samples) != 1:
-        problems.append(f"expected one sample column, found {len(vcf.samples)}")
-    used = {first.chrom} if first else set()
-    if first is None:
-        problems.append("VCF has no records")
-    missing = sorted(c for c in used if c not in fai)
-    if missing:
-        problems.append(f"VCF contigs missing from reference: {', '.join(missing)}")
+    samples: list[str] = []
+    try:
+        samples, chrom = first_record_contig(args.vcf)
+        if chrom is None:
+            problems.append("VCF has no records")
+        elif chrom not in fai:
+            problems.append(f"VCF contigs missing from reference: {chrom}")
+    except VcfFormatError as exc:
+        problems.append(str(exc))
     panel_contigs = {line.split("\t")[0] for line in read_lines(args.panel)}
     if not panel_contigs <= fai:
         problems.append(
             f"panel contigs missing from reference: {', '.join(sorted(panel_contigs - fai))}"
         )
+    if args.gnomad:
+        try:
+            _, gnomad_chrom = first_record_contig(args.gnomad)
+            if gnomad_chrom is not None and gnomad_chrom not in fai:
+                problems.append(f"gnomAD contigs missing from reference: {gnomad_chrom}")
+        except VcfFormatError as exc:
+            problems.append(str(exc))
     result = {
         "sample": args.sample,
-        "vcf_sample_name": vcf.samples[0] if vcf.samples else None,
-        "header_contigs": len(contigs),
+        "vcf_sample_name": samples[0] if samples else None,
         "panel_contigs": sorted(panel_contigs),
         "problems": problems,
     }
@@ -167,7 +181,7 @@ def cmd_filter(args: argparse.Namespace) -> int:
     params = FilterParams(args.min_stars, args.max_af, not args.exclude_low_penetrance)
     rows = []
     with open_text(args.vcf) as handle:
-        vcf = read_vcf(handle)
+        vcf = read_vcf(handle, args.vcf)
         for record in vcf.records:
             row = evaluate(record, args.sample, params)
             if row is not None:
@@ -277,7 +291,9 @@ def cmd_diff(args: argparse.Namespace) -> int:
     with open_text(args.old) as old, open_text(args.new) as new, open_text(args.out, "w") as dst:
         dst.write("\t".join(CHANGE_COLUMNS) + "\n")
         entries = diff_releases(
-            parse_entries(old, old_counts), parse_entries(new, new_counts), genes
+            parse_entries(old, args.old, old_counts),
+            parse_entries(new, args.new, new_counts),
+            genes,
         )
         for change, o, n in entries:
             accumulate(stats, change, o, n)
@@ -288,20 +304,9 @@ def cmd_diff(args: argparse.Namespace) -> int:
         "new": args.new_label,
         "gene_filter": len(genes) if genes else None,
         "rows_read": {"old": old_counts.rows, "new": new_counts.rows},
-        "rows_skipped": {"old": old_counts.skipped, "new": new_counts.skipped},
         **stats.as_dict(),
     }
     write_text(args.json, to_json(data))
-    if old_counts.skipped or new_counts.skipped:
-        # A skipped row would let the change counts add up to fewer records than the release.
-        fields = {
-            "old": args.old,
-            "old_skipped": old_counts.skipped,
-            "new": args.new,
-            "new_skipped": new_counts.skipped,
-        }
-        log.error("malformed rows", extra={"fields": fields})
-        return 1
     info("diff", **dict(stats.changes))
     return 0
 
@@ -525,6 +530,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--vcf", required=True)
     p.add_argument("--fai", required=True)
     p.add_argument("--panel", required=True)
+    p.add_argument("--gnomad")
     p.add_argument("--out", required=True)
     p.set_defaults(func=cmd_validate)
 

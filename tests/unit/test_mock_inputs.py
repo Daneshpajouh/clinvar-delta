@@ -45,7 +45,7 @@ def test_validate(tmp_path: Path, vcf: str, status: int, problem: str | None) ->
 
 @pytest.mark.parametrize(
     ("vcf", "message"),
-    [("empty.vcf", "empty file"), ("malformed.vcf", "line 4: expected 8+")],
+    [("empty.vcf", "empty file"), ("malformed.vcf", "line 4: expected 10 tab-separated columns")],
 )
 def test_bad_vcf_raises_with_location(vcf: str, message: str) -> None:
     with open_text(MOCK / vcf) as handle, pytest.raises(VcfFormatError, match=message):
@@ -157,3 +157,77 @@ def test_malformed_input_is_named_in_the_error_log(
     assert error["level"] == "error"
     assert "line 4" in error["error"]
     assert str(bad) in error["inputs"]
+
+
+@pytest.mark.parametrize(
+    ("text", "message"),
+    [
+        ("##fileformat=VCFv4.2\n##contig=<ID=chr1>\n", "no #CHROM header line"),
+        (
+            "##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tA\tB\n",
+            "2 samples; one sample per VCF expected",
+        ),
+        (
+            "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tA\n"
+            "chr1\t5\t.\tA\tG\t.\t.\t.\tGT\t0/1\textra\n",
+            "line 2: expected 10 .* got 11",
+        ),
+    ],
+    ids=["metadata only", "two samples", "extra column"],
+)
+def test_vcf_structure_errors_name_the_file(tmp_path: Path, text: str, message: str) -> None:
+    path = tmp_path / "in.vcf"
+    path.write_text(text)
+    with open_text(path) as handle, pytest.raises(VcfFormatError, match=f"{path}: {message}"):
+        list(read_vcf(handle, str(path)).records)
+
+
+HEAD = "##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"
+SITES = HEAD + "\n{c}\t100\t.\tA\tG\t.\t.\tAF=0.1\n"
+SAMPLE = HEAD + "\tFORMAT\tS1\n{c}\t100\t.\tA\tG\t.\t.\t.\tGT\t0/1\n"
+
+
+@pytest.mark.parametrize(
+    ("ref", "vcf", "panel", "gnomad", "problem"),
+    [
+        ("chr1", "chr1", "chr1", "chr1", None),
+        ("1", "1", "1", "1", None),
+        ("chr1", "1", "chr1", "chr1", "VCF contigs missing from reference: 1"),
+        ("chr1", "chr1", "1", "chr1", "panel contigs missing from reference: 1"),
+        ("chr1", "chr1", "chr1", "1", "gnomAD contigs missing from reference: 1"),
+        ("1", "chr1", "1", "1", "VCF contigs missing from reference: chr1"),
+    ],
+    ids=[
+        "all chr",
+        "all bare",
+        "bare VCF",
+        "bare panel",
+        "bare gnomAD",
+        "chr VCF on bare reference",
+    ],
+)
+def test_validate_contig_style_of_every_input(  # noqa: PLR0917 (one parametrize row per case)
+    tmp_path: Path, ref: str, vcf: str, panel: str, gnomad: str, problem: str | None
+) -> None:
+    (tmp_path / "ref.fai").write_text(f"{ref}\t1000\t0\t60\t61\n")
+    (tmp_path / "s.vcf").write_text(SAMPLE.format(c=vcf))
+    (tmp_path / "p.bed").write_text(f"{panel}\t50\t300\tGENE1\n")
+    (tmp_path / "g.vcf").write_text(SITES.format(c=gnomad))
+    out = tmp_path / "v.json"
+    code = run(
+        "validate",
+        "--sample",
+        "S1",
+        "--vcf",
+        str(tmp_path / "s.vcf"),
+        "--fai",
+        str(tmp_path / "ref.fai"),
+        "--panel",
+        str(tmp_path / "p.bed"),
+        "--gnomad",
+        str(tmp_path / "g.vcf"),
+        "--out",
+        str(out),
+    )
+    assert json.loads(out.read_text())["problems"] == ([problem] if problem else [])
+    assert code == (1 if problem else 0)
