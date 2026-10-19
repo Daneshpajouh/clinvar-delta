@@ -6,7 +6,10 @@ Semantic versioning. MAJOR: an output column, file name or parameter is removed 
 meaning. MINOR: a new output, parameter or mode. PATCH: bug fixes and dependency pins that
 do not change outputs on the test data. Every release updates CHANGELOG.md, the version in
 `nextflow.config`, `pyproject.toml`, `src/cvnf/__init__.py`, `CITATION.cff` and the tools
-image tag in `conf/base.config`.
+image tag in `conf/base.config`. Tagging `vX.Y.Z` runs `.github/workflows/release.yml`,
+which pushes the tools image to ghcr.io and prints its digest in the release notes; the
+next commit replaces the tag in `conf/base.config` with that digest, so that both images
+are pinned by digest from then on.
 
 ## Monthly ClinVar update
 

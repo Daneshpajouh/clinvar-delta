@@ -26,7 +26,7 @@ process CVNF_DIFF {
 
     stub:
     """
-    echo -n | gzip -c > diff.${scope}.changes.tsv.gz
+    echo -n | gzip -nc > diff.${scope}.changes.tsv.gz
     echo '{}' > diff.${scope}.json
     printf '"%s":\\n    cvnf: stub\\n' "${task.process}" > versions.yml
     """

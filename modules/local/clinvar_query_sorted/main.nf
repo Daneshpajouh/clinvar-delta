@@ -15,7 +15,7 @@ process CLINVAR_QUERY_SORTED {
     """
     bcftools query -f '%ID\\t%CHROM\\t%POS\\t%REF\\t%ALT\\t%INFO/CLNSIG\\t%INFO/CLNREVSTAT\\t%INFO/GENEINFO\\n' ${clinvar} \\
         | LC_ALL=C sort -t "\$(printf '\\t')" -k1,1n \\
-        | gzip -c > ${label}.by_id.tsv.gz
+        | gzip -nc > ${label}.by_id.tsv.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -25,7 +25,7 @@ process CLINVAR_QUERY_SORTED {
 
     stub:
     """
-    echo -n | gzip -c > ${label}.by_id.tsv.gz
+    echo -n | gzip -nc > ${label}.by_id.tsv.gz
     printf '"%s":\\n    bcftools: stub\\n' "${task.process}" > versions.yml
     """
 }

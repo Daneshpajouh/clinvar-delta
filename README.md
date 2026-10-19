@@ -4,8 +4,7 @@ A Nextflow pipeline that does two things with ClinVar:
 
 1. Panel report: takes a germline VCF, normalises it, adds ClinVar classifications,
    review stars and gnomAD allele frequencies, and lists the variants in a gene panel
-   (the 81 ACMG secondary findings genes by default) that ClinVar calls pathogenic or
-   likely pathogenic.
+   (here the 81 ACMG SF v3.2 genes) that ClinVar calls pathogenic or likely pathogenic.
 2. Release audit: compares two ClinVar releases variant by variant and reports what
    changed: reclassifications (for example VUS to likely pathogenic), changes in review
    level, new and withdrawn records, and changes that are only re-annotation by ClinVar.
@@ -28,22 +27,23 @@ Python 3.11+.
 ```bash
 git clone https://github.com/Daneshpajouh/clinvar-variant-nf.git
 cd clinvar-variant-nf
+make image        # builds ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.0 locally
 
-# Annotate two bundled samples (real HG002 records in BRCA1, BRCA2, TP53 and one synthetic sample)
+# Annotate two bundled samples: real HG002 records in BRCA1, BRCA2 and TP53, and one synthetic sample
 nextflow run . -profile test,docker --outdir results
+# ...
+# [SUCCESS] completed=18 failed=0 cached=0
 
 # Compare the bundled cuts of two ClinVar releases
 nextflow run . -profile test_diff,docker --outdir results_diff
 
-open results/report/SYNTH01.report.html results_diff/clinvar_diff/clinvar_diff.report.html
+ls results/report results_diff/clinvar_diff
 ```
 
 Without Docker, use `-profile test`; `bin/cvnf` runs the Python tools from the checkout.
-The Docker profile expects the tools image, built with `make image`, until a tagged release
-publishes it to ghcr.io.
 
-On the development machine (Apple M-series Mac, 2026-10-19) the annotate test took 13.5 s
-with Docker and the diff test 2.6 s with local tools.
+On the development machine (Apple M-series Mac, Docker Desktop, 2026-10-19) the two test
+runs took 12.6 s and 8.8 s.
 
 ## Real-data results
 

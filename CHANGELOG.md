@@ -14,5 +14,5 @@ First release.
   `cvnf profile-calibrate`, `cvnf profile-sacct`; `conf/calibrated.config` from two real runs.
 - Run manifest with input SHA-256, parameters, git commit and container images.
 - Profiles: standard, docker, apptainer, slurm, calibrated, test, test_diff.
-- Tests: 88 unit and CLI tests, 14 nf-test tests with snapshots, 9 pipeline tests
+- Tests: 90 unit and CLI tests, 14 nf-test tests with snapshots, 9 pipeline tests
   including resume and stub runs.

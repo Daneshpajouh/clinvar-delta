@@ -13,8 +13,7 @@ process BCFTOOLS_NORM {
     path "versions.yml", emit: versions
 
     script:
-    // -m -any splits multiallelic records; -f left-aligns indels against the reference;
-    // -c w reports REF mismatches instead of stopping, and they are counted in the log.
+    // -c w: a REF mismatch is logged and counted in the norm log instead of stopping the run.
     """
     bcftools norm --no-version --threads ${task.cpus} -m -any -f ${fasta} -c w \\
         -Oz -o ${meta.id}.norm.vcf.gz ${vcf} 2> ${meta.id}.norm.log

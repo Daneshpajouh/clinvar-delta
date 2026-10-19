@@ -24,8 +24,17 @@ def open_text(path: str | Path, mode: str = "r") -> Iterator[TextIO]:
     if name == "-":
         yield sys.stdin if "r" in mode else sys.stdout
         return
+    if name.endswith((".gz", ".bgz")) and "w" in mode:
+        # No file name and mtime=0 in the gzip header, so equal content gives equal bytes.
+        with (
+            open(name, "wb") as dest,
+            gzip.GzipFile(filename="", mode="wb", fileobj=dest, mtime=0) as raw,
+            io.TextIOWrapper(raw, encoding="utf-8", newline="") as handle,
+        ):
+            yield cast(TextIO, handle)
+        return
     if name.endswith((".gz", ".bgz")):
-        with gzip.open(name, mode + "t", encoding="utf-8", newline="") as handle:
+        with gzip.open(name, "rt", encoding="utf-8", newline="") as handle:
             yield cast(TextIO, handle)
         return
     with open(name, mode, encoding="utf-8", newline="") as handle:
@@ -135,8 +144,3 @@ def header_contigs(lines: list[str]) -> list[str]:
                 if key == "ID":
                     out.append(value)
     return out
-
-
-def text_stream(data: str) -> TextIO:
-    """Wrap a string as a text handle; used by tests and small fixtures."""
-    return io.StringIO(data)

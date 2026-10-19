@@ -3,7 +3,7 @@
 Every run writes `execution_trace.txt`, `execution_report.html` and
 `execution_timeline.html` to `results/pipeline_info/`. The trace has one row per task with
 the request (`cpus`, `memory`, `time`) next to the measurement (`%cpu`, `peak_rss`,
-`realtime`, `rchar`, `wchar`, `attempt`, `exit`). Everything below starts from that file.
+`realtime`, `rchar`, `wchar`, `attempt`, `exit`).
 
 On macOS without a container engine Nextflow cannot read task metrics (it warns "Task
 runtime metrics are not reported"), so measured runs here use `-profile docker`.
@@ -32,8 +32,7 @@ Requests are `max(256 MB, peak_rss x 2)` and `max(10 min, realtime x 4)`, both m
 | CVNF_DIFF_ALL | 1 | 24.9 MB | 31.2 s | 2 GB, 1 h | 1.2% |
 | CVNF_DIFF_PANEL | 1 | 24.4 MB | 15.8 s | 2 GB, 1 h | 1.2% |
 
-Two things stand out. The default labels ask for 7 to 150 times the memory these tasks
-use, which on a shared Slurm cluster delays scheduling and wastes allocation. And
+The default labels ask for 7 to 150 times the memory these tasks use, which on a shared Slurm cluster delays scheduling and wastes allocation.
 `CVNF_DIFF_ALL` reads 4.6 million plus 3.9 million records in 25 MB: the inputs are sorted
 by Variation ID in `CLINVAR_QUERY_SORTED` (where `sort` spends the 612 MB) and the Python
 step is a streaming merge join, so its memory does not grow with release size.

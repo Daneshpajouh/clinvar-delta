@@ -1,7 +1,9 @@
+import io
+
 import pytest
 
 from cvnf.panel import acmg_symbols, lookup_to_bed, pad_bed
-from cvnf.vcf import carries_alt, header_contigs, parse_info, read_vcf, text_stream
+from cvnf.vcf import carries_alt, header_contigs, parse_info, read_vcf
 
 PAGE = """<table><tr><td>Hereditary breast cancer (<a>MIM 604370</a>)</td><td>MedGen C2676676</td>
 <td><a>BRCA1</a> (MIM 113705)</td><td><a>ClinVar</a></td></tr>
@@ -46,7 +48,7 @@ def test_read_vcf_and_info() -> None:
         "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\n"
         "chr1\t5\t.\tA\tG\t50\tPASS\tDB;AF=0.1\tGT:DP\t0/1:20\n"
     )
-    vcf = read_vcf(text_stream(text))
+    vcf = read_vcf(io.StringIO(text))
     rec = next(vcf.records)
     assert vcf.samples == ["S1"]
     assert header_contigs(vcf.header) == ["chr1"]

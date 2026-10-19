@@ -5,15 +5,15 @@ Four layers, each run by one command. The test report for v1.0.0 is in
 
 | Layer | Command | Tests | Run time | What it catches |
 |---|---|---|---|---|
-| Unit and CLI (pytest) | `make test-unit` | 88 | 0.3 s | classification and star mapping, diff categories, merge-join order, parsing of traces and sacct, report contents, bad inputs |
-| Module (nf-test) | `make nf-test` | 11 module tests, 3 pipeline tests | 74 s | each process's command line, inputs and outputs, snapshots of outputs |
-| Pipeline (pytest + Nextflow) | `make test-pipeline` | 9 | 30 s | channel wiring, both modes end to end, `-resume`, `-stub-run`, samplesheet validation |
+| Unit and CLI (pytest) | `make test-unit` | 90 | 0.3 s | classification and star mapping, diff categories, merge-join order, parsing of traces and sacct, report contents, bad inputs |
+| Module (nf-test) | `make nf-test` | 11 module tests, 3 pipeline tests | 63 s | each process's command line, inputs and outputs, snapshots of outputs |
+| Pipeline (pytest + Nextflow) | `make test-pipeline` | 9 | 26 s | channel wiring, both modes end to end, `-resume`, `-stub-run`, samplesheet validation |
 | Validation (real data) | commands in results.md | 2 runs | 31 s and 80 s | counts that must add up, checksums of inputs, comparison with known values |
 
 ## Unit and CLI layer
 
 `tests/unit/`, pure Python, no network or external tools. Coverage of `src/cvnf` from
-`pytest tests/unit --cov=cvnf` on 2026-10-19: 88% of 934 statements. By module: clinvar
+`pytest tests/unit --cov=cvnf` on 2026-10-19: 88% of 942 statements. By module: clinvar
 100%, diff 99%, annotate 98%, profiling 94%, report 92%, vcf 92%, panel 85%, cli 73%
 (the uncovered CLI lines are the panel and manifest commands, which the pipeline layer
 runs).
@@ -26,7 +26,7 @@ Notable cases:
   P/B mix;
 - the diff: accession continuity across gaps in Variation IDs, unsorted input rejected,
   gene filter matching either release, assertion and annotation changes counted apart,
-  and byte-identical output from two runs on the same input;
+  and byte-identical output, gzip included, from two runs on the same input;
 - hand-written mocks in `tests/data/mock/` (see `tests/data/README.md`): a multiallelic
   site, a malformed line (the error names line 4), an empty file, a contig naming
   mismatch, records missing CLNSIG or CLNSTARS, and two tiny releases with one

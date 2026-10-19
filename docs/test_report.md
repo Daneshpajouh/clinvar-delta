@@ -5,16 +5,17 @@ nf-test 0.9.5; Python 3.13.9; bcftools 1.23.1 (Homebrew and BioContainers).
 
 | Check | Command | Result |
 |---|---|---|
-| ruff lint | `ruff check src tests scripts bin/cvnf` | RESULT_RUFF |
-| ruff format | `ruff format --check src tests scripts` | RESULT_FORMAT |
-| mypy (strict) | `mypy` | RESULT_MYPY |
-| unit tests | `pytest tests/unit --cov=cvnf` | RESULT_UNIT |
-| pipeline tests | `pytest -m pipeline tests/pipeline` | RESULT_PIPELINE |
-| nf-test | `nf-test test tests/nf-test` | RESULT_NFTEST |
-| shellcheck | `shellcheck scripts/*.sh` | RESULT_SHELLCHECK |
-| bats | `bats tests/bats` | RESULT_BATS |
-| docs build | `mkdocs build --strict` | RESULT_MKDOCS |
-| Docker test profile | `nextflow run . -profile test,docker` | 15 tasks succeeded, 13.5 s |
+| ruff lint | `ruff check src tests scripts bin/cvnf` | all checks passed |
+| ruff format | `ruff format --check src tests scripts` | 20 files already formatted |
+| mypy (strict) | `mypy` | no issues in 17 source files |
+| unit tests | `pytest tests/unit --cov=cvnf` | 90 passed in 0.28 s; coverage 88% of 942 statements |
+| pipeline tests | `pytest -m pipeline tests/pipeline` | 9 passed in 26.2 s |
+| nf-test | `nf-test test tests/nf-test` | 14 passed in 63.4 s (11 module, 3 pipeline including a stub run) |
+| shellcheck | `shellcheck scripts/*.sh` | no findings |
+| bats | `bats tests/bats` | 5 passed |
+| docs build | `mkdocs build --strict` | built, no warnings |
+| Docker test profiles | `make image`, then `nextflow run . -profile test,docker` and `-profile test_diff,docker` | 18 tasks in 12.6 s; 6 tasks in 8.8 s |
+| Linux unit check | `python:3.13-slim` container (Linux aarch64): ruff, mypy, pytest tests/unit | passed (89 tests, before the last gzip test was added) |
 | real annotate run | see results.md | 12 tasks succeeded, 30.9 s |
 | real diff run | see results.md | 6 tasks succeeded, 1 min 20 s |
 

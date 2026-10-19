@@ -1,7 +1,5 @@
 # ClinVar, review stars and reclassification
 
-This page is for readers who do not work with genetic variant data.
-
 ## What ClinVar is
 
 Everyone carries millions of small differences from the human reference genome. Almost all

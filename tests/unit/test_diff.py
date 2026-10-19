@@ -125,3 +125,32 @@ def test_cli_output_is_byte_identical_between_runs(tmp_path: Path) -> None:
     assert outputs[0] == outputs[1]
     data = json.loads(outputs[0][1])
     assert data["changes"] == {"added": 1, "reclassified": 1, "removed": 1, "review_changed": 1}
+
+
+def test_gzip_output_is_byte_identical_between_runs(tmp_path: Path) -> None:
+    old = tmp_path / "old.tsv"
+    new = tmp_path / "new.tsv"
+    old.write_text(row(1, "Pathogenic") + row(2, "Benign"))
+    new.write_text(row(1, "Likely_pathogenic") + row(3, "Benign"))
+    digests = []
+    for run in ("a", "b"):
+        out = tmp_path / f"{run}.tsv.gz"
+        main(
+            [
+                "diff",
+                "--old",
+                str(old),
+                "--new",
+                str(new),
+                "--old-label",
+                "o",
+                "--new-label",
+                "n",
+                "--out",
+                str(out),
+                "--json",
+                str(tmp_path / f"{run}.json"),
+            ]
+        )
+        digests.append(out.read_bytes())
+    assert digests[0] == digests[1]

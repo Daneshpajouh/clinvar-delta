@@ -1,7 +1,7 @@
 # Logging
 
-What a run records before, during and after. Examples are from
-`nextflow run . -profile test -ansi-log false --outdir results_test2` on 2026-10-19.
+Examples are from `nextflow run . -profile test -ansi-log false --outdir results_test2`
+on 2026-10-19.
 
 ## Before
 

@@ -31,7 +31,7 @@ process CLINVAR_PREPARE {
         | bcftools view --no-version -t "\$(cat keep_targets.txt)" -Ou ${restrict} \\
         | bcftools norm --no-version -m -any -f ${fasta} -c w -Ou 2> clinvar.norm_warnings.txt \\
         | bcftools query -f '%CHROM\\t%POS\\t%REF\\t%ALT\\t%ID\\t%INFO/CLNSIG\\t%INFO/CLNREVSTAT\\t%INFO/GENEINFO\\n' \\
-        | gzip -c > clinvar.query.tsv.gz
+        | gzip -nc > clinvar.query.tsv.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -41,7 +41,7 @@ process CLINVAR_PREPARE {
 
     stub:
     """
-    echo -n | gzip -c > clinvar.query.tsv.gz
+    echo -n | gzip -nc > clinvar.query.tsv.gz
     touch clinvar.norm_warnings.txt
     printf '"%s":\\n    bcftools: stub\\n' "${task.process}" > versions.yml
     """
