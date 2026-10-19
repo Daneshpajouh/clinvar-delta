@@ -1,6 +1,7 @@
 import pytest
 
 from cvnf.annotate import FilterParams, clinvar_table, evaluate, gene_summary, stars_breakdown
+from cvnf.report import md_table
 from cvnf.vcf import VcfRecord
 
 EXPERT = "reviewed_by_expert_panel"
@@ -131,3 +132,11 @@ def test_unsplit_multiallelic_records_are_refused(alt: str, info: dict[str, str]
     rec = VcfRecord("chr13", 1000, ".", "A", alt, "50", "PASS", {**BASE, **info}, {"GT": "0/1"})
     with pytest.raises(ValueError, match=r"chr13:1000:A:.*multiallelic record"):
         evaluate(rec, "S1", FilterParams())
+
+
+def test_markdown_row_keeps_its_columns_when_clnsig_has_a_pipe() -> None:
+    row = md_table(
+        ["gene", "clnsig", "stars"], [["HFE", "Pathogenic|risk_factor", 2]]
+    ).splitlines()[2]
+    assert row == "| HFE | Pathogenic\\|risk_factor | 2 |"
+    assert row.replace("\\|", "").count("|") == 4

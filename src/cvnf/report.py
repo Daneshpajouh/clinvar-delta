@@ -8,9 +8,14 @@ from collections.abc import Sequence
 Table = tuple[Sequence[str], Sequence[Sequence[object]]]
 
 
+def _md_cell(value: object) -> str:
+    # CLNSIG values such as "Pathogenic|risk_factor" carry a pipe, which would end the cell.
+    return str(value).replace("|", "\\|")
+
+
 def md_table(header: Sequence[str], rows: Sequence[Sequence[object]]) -> str:
     out = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
-    out += ["| " + " | ".join(str(c) for c in row) + " |" for row in rows]
+    out += ["| " + " | ".join(_md_cell(c) for c in row) + " |" for row in rows]
     return "\n".join(out)
 
 
