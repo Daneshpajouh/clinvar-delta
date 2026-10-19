@@ -1,9 +1,9 @@
 # Targets used in CONTRIBUTING.md and CI. NFTEST and PYTHON can be overridden.
 PYTHON ?= .venv/bin/python
 NFTEST ?= nf-test
-IMAGE ?= ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.0
+IMAGE ?= ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.1
 
-.PHONY: venv lint typecheck test-unit test-pipeline nf-test shellcheck bats check docs image test test-docker
+.PHONY: venv lint typecheck test-unit test-pipeline nf-test shellcheck bats check docs image test test-docker test-linux
 
 venv:
 	python3 -m venv .venv && .venv/bin/pip install -e '.[dev]' mkdocs mkdocs-material
@@ -43,3 +43,7 @@ test:
 
 test-docker: image
 	nextflow run . -profile test,docker --outdir results_test_docker
+
+NXF_VER ?= 25.04.0
+test-linux:
+	scripts/test_linux.sh $(NXF_VER)

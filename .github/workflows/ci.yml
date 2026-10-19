@@ -52,11 +52,30 @@ jobs:
           version: "0.9.5"
       - run: pip install -e '.[dev]'
       - name: Build the tools image used by the docker profile
-        run: docker build -f containers/Dockerfile -t ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.0 .
+        run: docker build -f containers/Dockerfile -t ghcr.io/daneshpajouh/clinvar-variant-nf:1.0.1 .
       - name: Pipeline tests (test profile, diff profile, resume, stub run)
         run: pytest -m pipeline tests/pipeline
       - name: nf-test modules and pipeline
         run: nf-test test tests/nf-test --profile test,docker
+
+  minimum-nextflow:
+    # The declared minimum, with tools from apt and an empty plugin cache.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: nf-core/setup-nextflow@v2
+        with:
+          version: "25.04.0"
+      - run: sudo apt-get update && sudo apt-get install -y bcftools tabix procps
+      - run: nextflow run . -profile test --outdir results
+      - run: nextflow run . -profile test_diff --outdir results_diff
 
   docs:
     runs-on: ubuntu-latest
