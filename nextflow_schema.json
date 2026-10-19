@@ -1,0 +1,208 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/Daneshpajouh/clinvar-variant-nf/main/nextflow_schema.json",
+    "title": "clinvar-variant-nf parameters",
+    "description": "Annotate germline VCFs with ClinVar and gnomAD, report a gene panel, and compare ClinVar releases.",
+    "type": "object",
+    "$defs": {
+        "mode_options": {
+            "title": "Mode",
+            "type": "object",
+            "properties": {
+                "mode": {
+                    "type": "string",
+                    "description": "annotate: report panel variants for samples. diff: compare two ClinVar releases.",
+                    "enum": [
+                        "annotate",
+                        "diff"
+                    ],
+                    "default": "annotate"
+                }
+            }
+        },
+        "annotate_options": {
+            "title": "Annotate inputs",
+            "type": "object",
+            "properties": {
+                "input": {
+                    "type": "string",
+                    "description": "Samplesheet CSV with columns sample,vcf,tbi.",
+                    "format": "file-path",
+                    "exists": true,
+                    "schema": "assets/schema_input.json",
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$"
+                },
+                "fasta": {
+                    "type": "string",
+                    "description": "bgzipped GRCh38 FASTA with .fai and .gzi next to it, chr-prefixed contigs.",
+                    "format": "file-path",
+                    "exists": true
+                },
+                "clinvar": {
+                    "type": "string",
+                    "description": "ClinVar GRCh38 VCF (vcf_GRCh38/clinvar_YYYYMMDD.vcf.gz) with .tbi.",
+                    "format": "file-path",
+                    "exists": true
+                },
+                "gnomad": {
+                    "type": "string",
+                    "description": "gnomAD sites VCF with INFO/AF, bgzipped and indexed; panel regions are enough.",
+                    "format": "file-path",
+                    "exists": true
+                },
+                "panel": {
+                    "type": "string",
+                    "description": "Gene panel BED: chrom, start, end, gene symbol.",
+                    "format": "file-path",
+                    "exists": true
+                },
+                "prefilter_panel": {
+                    "type": "boolean",
+                    "description": "Restrict sample and ClinVar records to the padded panel before normalisation.",
+                    "default": true
+                },
+                "panel_padding": {
+                    "type": "integer",
+                    "description": "Bases added to each side of panel intervals for the prefilter.",
+                    "default": 1000,
+                    "minimum": 0
+                },
+                "min_stars": {
+                    "type": "integer",
+                    "description": "Minimum ClinVar review stars for a reportable P/LP variant.",
+                    "default": 1,
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "max_af": {
+                    "type": "number",
+                    "description": "Maximum gnomAD allele frequency for a reportable variant; absent counts as 0.",
+                    "default": 0.01,
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "include_low_penetrance": {
+                    "type": "boolean",
+                    "description": "Report P/LP classifications marked low penetrance.",
+                    "default": true
+                }
+            }
+        },
+        "diff_options": {
+            "title": "Diff inputs",
+            "type": "object",
+            "properties": {
+                "clinvar_old": {
+                    "type": "string",
+                    "description": "Older ClinVar GRCh38 VCF with .tbi.",
+                    "format": "file-path",
+                    "exists": true
+                },
+                "clinvar_new": {
+                    "type": "string",
+                    "description": "Newer ClinVar GRCh38 VCF with .tbi.",
+                    "format": "file-path",
+                    "exists": true
+                },
+                "clinvar_old_label": {
+                    "type": "string",
+                    "description": "Label for the older release, for example clinvar_20251013.",
+                    "default": "old"
+                },
+                "clinvar_new_label": {
+                    "type": "string",
+                    "description": "Label for the newer release.",
+                    "default": "new"
+                },
+                "diff_genes": {
+                    "type": "string",
+                    "description": "Text file with one gene symbol per line for the panel-level comparison.",
+                    "format": "file-path",
+                    "exists": true
+                }
+            }
+        },
+        "output_options": {
+            "title": "Output",
+            "type": "object",
+            "properties": {
+                "outdir": {
+                    "type": "string",
+                    "description": "Output directory.",
+                    "format": "directory-path",
+                    "default": "results"
+                },
+                "publish_dir_mode": {
+                    "type": "string",
+                    "description": "How results are published.",
+                    "enum": [
+                        "copy",
+                        "symlink",
+                        "link",
+                        "rellink",
+                        "copyNoFollow",
+                        "move"
+                    ],
+                    "default": "copy"
+                }
+            }
+        },
+        "resource_options": {
+            "title": "Resources and scheduler",
+            "type": "object",
+            "properties": {
+                "max_cpus": {
+                    "type": "integer",
+                    "description": "Upper bound for any task's CPUs, retries included.",
+                    "default": 8,
+                    "minimum": 1
+                },
+                "max_memory": {
+                    "type": "string",
+                    "description": "Upper bound for any task's memory.",
+                    "default": "16.GB",
+                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$"
+                },
+                "max_time": {
+                    "type": "string",
+                    "description": "Upper bound for any task's wall time.",
+                    "default": "24.h",
+                    "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$"
+                },
+                "slurm_queue": {
+                    "type": "string",
+                    "description": "Slurm partition for the slurm profile."
+                },
+                "slurm_cluster_options": {
+                    "type": "string",
+                    "description": "Extra sbatch options, for example --account=def-xyz.",
+                    "default": ""
+                },
+                "help": {
+                    "type": "boolean",
+                    "description": "Show help.",
+                    "default": false,
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/$defs/mode_options"
+        },
+        {
+            "$ref": "#/$defs/annotate_options"
+        },
+        {
+            "$ref": "#/$defs/diff_options"
+        },
+        {
+            "$ref": "#/$defs/output_options"
+        },
+        {
+            "$ref": "#/$defs/resource_options"
+        }
+    ]
+}

@@ -1,0 +1,34 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/Daneshpajouh/clinvar-variant-nf/main/assets/schema_input.json",
+    "title": "clinvar-variant-nf samplesheet",
+    "description": "One row per sample: a single-sample, bgzipped and indexed germline VCF on GRCh38 with chr-prefixed contigs.",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "sample": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]+$",
+                "errorMessage": "sample may contain letters, digits, '.', '_' and '-' only",
+                "meta": ["id"]
+            },
+            "vcf": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.vcf\\.gz$",
+                "errorMessage": "vcf must be a bgzipped VCF ending in .vcf.gz"
+            },
+            "tbi": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.vcf\\.gz\\.tbi$",
+                "errorMessage": "tbi must be the tabix index of the VCF"
+            }
+        },
+        "required": ["sample", "vcf"]
+    },
+    "uniqueEntries": ["sample"]
+}

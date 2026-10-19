@@ -1,0 +1,3 @@
+sample,vcf,tbi
+HG002,tests/data/HG002.subset.vcf.gz,tests/data/HG002.subset.vcf.gz.tbi
+SYNTH01,tests/data/SYNTH01.vcf.gz,tests/data/SYNTH01.vcf.gz.tbi

@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+# Runs the cvnf package from this checkout when it is not installed, so the standard
+# (no container) profile works straight from a clone.
+import sys
+from pathlib import Path
+
+if sys.version_info < (3, 11):
+    sys.exit(f"cvnf needs Python 3.11 or newer; {sys.executable} is {sys.version.split()[0]}")
+
+try:
+    from cvnf.cli import main
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+    from cvnf.cli import main
+
+sys.exit(main())
