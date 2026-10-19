@@ -14,10 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check the tag matches the pipeline version
+        id: version
         run: |
           version="${GITHUB_REF_NAME#v}"
           grep -q "version = '${version}'" nextflow.config
           grep -q "^version = \"${version}\"" pyproject.toml
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -29,7 +31,8 @@ jobs:
           context: .
           file: containers/Dockerfile
           push: true
-          tags: ghcr.io/daneshpajouh/clinvar-delta:${{ github.ref_name }}
+          # conf/base.config pulls the image by the bare version, without the v.
+          tags: ghcr.io/daneshpajouh/clinvar-delta:${{ steps.version.outputs.version }}
       - name: Release notes from CHANGELOG.md
         run: |
           version="${GITHUB_REF_NAME#v}"
