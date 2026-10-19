@@ -1,7 +1,7 @@
 # Test report: v1.0.1, 2026-10-19
 
 Machine for the checks below: Apple M3 Ultra, macOS 27.0.1, Nextflow 26.10.2, Python
-3.13.9, bcftools 1.23.1 (Homebrew), Java 27. Tools from the checkout (no containers).
+3.13.9, bcftools 1.23.1 (Homebrew), Java 27. Tools from the checkout unless a row names a container.
 
 | Check | Command | Result |
 |---|---|---|
@@ -11,17 +11,19 @@ Machine for the checks below: Apple M3 Ultra, macOS 27.0.1, Nextflow 26.10.2, Py
 | bad numeric options | `--max_cpus abc`, `--max_cpus 0` | both refused by validation (string; below minimum 1) |
 | shellcheck | `shellcheck scripts/*.sh` | no findings |
 | bats | `bats tests/bats` | 5 passed |
-| nf-test | `nf-test test tests/nf-test` | [CONFIRM: run at the release check] |
-| ruff, mypy, docs build | `make lint typecheck docs` | [CONFIRM: run at the release check] |
-| clean Debian, minimum Nextflow | `scripts/test_linux.sh 26.04.0` | [CONFIRM: run at the release check] |
-| clean Debian, current Nextflow | `scripts/test_linux.sh 26.10.2` | [CONFIRM: run at the release check] |
-| Docker test profiles | `make image`, then `-profile test,docker` and `-profile test_diff,docker` | [CONFIRM: run at the release check; no Docker access on this machine's account] |
-| Linux unit check | `python:3.13-slim` container: ruff, mypy, pytest tests/unit | [CONFIRM: run at the release check] |
-| real diff run | see results.md | [CONFIRM: rerun for the v1.0.1 gene rules] |
+| nf-test | `nf-test test tests/nf-test` | 14 passed in 62.9 s (nf-test 0.9.5, at 6fe8ffd) |
+| ruff, mypy, docs build | `make lint typecheck docs` | ruff no findings, 20 files formatted; mypy no issues in 17 files; `mkdocs build --strict` built (at 6fe8ffd) |
+| clean Debian, minimum Nextflow | `scripts/test_linux.sh 26.04.0` | test and test_diff profiles succeeded with no warnings; SYNTH01 6 reportable; 24 s |
+| clean Debian, current Nextflow | `scripts/test_linux.sh 26.10.2` | test and test_diff profiles succeeded with no warnings; SYNTH01 6 reportable; 16 s |
+| Docker test profiles | `make image`, then `-profile test,docker` and `-profile test_diff,docker` | 19 and 7 tasks succeeded (Docker Desktop, image `clinvar-delta:1.0.1`) |
+| Linux unit check | `python:3.13-slim` container: ruff, mypy, pytest tests/unit | ruff no findings; mypy no issues in 17 files; 121 passed |
+| real diff run | see results.md | rerun at 7b6f361, 14:34 Pacific, 1 min 20 s: whole-release counts unchanged; panel column moved with the 1.0.1 gene rules |
 
 The real annotate run in results.md is from v1.0.0. v1.0.1 takes review stars from
-CLNREVSTAT when present, which can move the P/LP by stars line. [CONFIRM: annotate rerun
-on the v1.0.1 head.]
+CLNREVSTAT when present, which could move the P/LP by stars line, so the run was repeated at
+6fe8ffd (14:39 Pacific, 29.4 s, 13 tasks): the report, gene summary and panel variant table
+are byte-identical to v1.0.0 and P/LP by stars is still 0 at every level. Only the validation
+JSON differs: it no longer carries a `header_contigs` count.
 
 ## v1.0.0, 2026-10-19
 
