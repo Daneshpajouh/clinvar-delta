@@ -1,9 +1,9 @@
 # Results on real data
 
-All numbers on this page come from two v1.0.0 runs on 2026-10-19 (Pacific time 11:31 to 11:43) on
-an Apple M-series Mac with Docker Desktop. `run_manifest.json` records commit `000f3b9` for
-the annotate run and `3496b41` for the diff run, and the bcftools image digest
-`sha256:8cf74dd0...3869`. Data are listed in [data_sources.md](data_sources.md).
+The panel report numbers come from a v1.0.0 run on 2026-10-19 at 11:31 Pacific (commit
+`000f3b9`); the release comparison numbers from a v1.0.1 run on 2026-10-19 at 14:34 Pacific
+(commit `7b6f361`, Nextflow 26.10.2). Both ran on an Apple M-series Mac with Docker Desktop and
+the bcftools image digest `sha256:8cf74dd0...3869`, as `run_manifest.json` records. Data are listed in [data_sources.md](data_sources.md).
 
 ## HG002 against the ACMG SF v3.2 panel
 
@@ -60,13 +60,18 @@ up to both totals.
 
 | Change | All records | ACMG SF v3.2 genes |
 |---|---|---|
-| reclassified (group changed) | 40,961 | 5,672 |
-| review_changed (stars changed) | 164,786 | 13,662 |
-| term_changed (wording within group) | 16,180 | 1,284 |
-| annotation_only | 4,427 | 27 |
+| reclassified (group changed) | 40,961 | 5,674 |
+| review_changed (stars changed) | 164,786 | 13,664 |
+| term_changed (wording within group) | 16,180 | 1,292 |
+| annotation_only | 4,427 | 71 |
 | added | 725,461 | 28,586 |
 | removed | 8,820 | 1,071 |
 | unchanged | 3,642,949 | 287,395 |
+
+Since 1.0.1 a record counts for the panel when its gene is a panel gene in either release,
+and a P/LP loss is credited to the old release's gene. Against the 1.0.0 run that adds 56
+records to the panel column, all in the first four rows; the whole-release column is
+unchanged.
 
 Selected transitions between groups:
 
@@ -81,7 +86,7 @@ Selected transitions between groups:
 | P/LP | B/LB | 17 | 0 |
 
 Reclassified records by review stars in the new release, all records: 0 stars 143,
-1 star 36,687, 2 stars 3,196, 3 stars 935. Panel genes: 10, 4,873, 527 and 262.
+1 star 36,687, 2 stars 3,196, 3 stars 935. Panel genes: 10, 4,874, 528 and 262.
 
 Panel genes with the most reclassifications (a record listed under two genes counts for
 each, which is why TTN-AS1 appears beside TTN):

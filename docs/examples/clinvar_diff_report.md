@@ -110,11 +110,11 @@ Assertion changes (reclassified, review_changed, term_changed) come from submitt
 | change | variation IDs |
 |---|---|
 | added | 28586 |
-| annotation_only | 27 |
-| reclassified | 5672 |
+| annotation_only | 71 |
+| reclassified | 5674 |
 | removed | 1071 |
-| review_changed | 13662 |
-| term_changed | 1284 |
+| review_changed | 13664 |
+| term_changed | 1292 |
 | unchanged | 287395 |
 
 ## Panel genes: reclassifications between groups
@@ -124,7 +124,7 @@ Assertion changes (reclassified, review_changed, term_changed) come from submitt
 | VUS | CONFLICTING | 2862 |
 | BLB | CONFLICTING | 872 |
 | PLP | CONFLICTING | 496 |
-| CONFLICTING | BLB | 350 |
+| CONFLICTING | BLB | 352 |
 | CONFLICTING | PLP | 297 |
 | VUS | BLB | 195 |
 | VUS | PLP | 183 |
@@ -150,8 +150,8 @@ Assertion changes (reclassified, review_changed, term_changed) come from submitt
 | stars | count |
 |---|---|
 | 0 | 10 |
-| 1 | 4873 |
-| 2 | 527 |
+| 1 | 4874 |
+| 2 | 528 |
 | 3 | 262 |
 
 ## Panel genes: genes with most reclassifications
@@ -183,12 +183,12 @@ A variant listed under two genes counts once for each.
 | TP53 | 106 | 39 | 9 |
 | APC | 102 | 3 | 4 |
 | VHL | 101 | 5 | 3 |
-| GAA | 95 | 9 | 49 |
+| GAA | 95 | 9 | 47 |
 | PMS2 | 87 | 3 | 4 |
 
 ## Panel genes: assertion versus annotation changes
 
 | kind | variation IDs |
 |---|---|
-| assertion (reclassified, review_changed, term_changed) | 20618 |
-| annotation only | 27 |
+| assertion (reclassified, review_changed, term_changed) | 20630 |
+| annotation only | 71 |
