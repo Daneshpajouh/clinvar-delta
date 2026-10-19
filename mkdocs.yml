@@ -11,7 +11,7 @@ nav:
   - Profiling: profiling.md
   - Logging: logging.md
   - Testing: testing.md
-  - Test report v1.0.0: test_report.md
+  - Test report v1.0.1: test_report.md
   - Code walk-through: code_walkthrough.md
   - Maintenance SOP: sop.md
   - Operations notes: operations.md

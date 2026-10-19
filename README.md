@@ -70,7 +70,7 @@ From runs on 2026-10-19 (commands and full tables in [docs/results.md](docs/resu
 | [quick start and usage](docs/usage.md), [parameters](docs/parameters.md) | running on your data, profiles, outputs |
 | [results](docs/results.md) | real HG002 and release-diff numbers with the exact commands |
 | [profiling](docs/profiling.md) | before, during and after a run: trace report, calibrated requests, Slurm accounting |
-| [testing](docs/testing.md), [test report](docs/test_report.md) | the four test layers and the v1.0.0 results |
+| [testing](docs/testing.md), [test report](docs/test_report.md) | the four test layers and the v1.0.1 results |
 | [code walk-through](docs/code_walkthrough.md) | a reviewer's tour of the code, with the design decisions |
 | [maintenance SOP](docs/sop.md) | monthly ClinVar update, versioning, deprecations |
 | [operations notes](docs/operations.md) | failures hit while building this, and their fixes |

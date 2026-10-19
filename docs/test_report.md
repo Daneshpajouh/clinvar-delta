@@ -1,4 +1,27 @@
-# Test report: v1.0.0, 2026-10-19
+# Test report: v1.0.1, 2026-10-19
+
+Machine for the checks below: Apple M3 Ultra, macOS 27.0.1, Nextflow 26.10.2, Python
+3.13.9, bcftools 1.23.1 (Homebrew), Java 27. Tools from the checkout (no containers).
+
+| Check | Command | Result |
+|---|---|---|
+| unit tests | `pytest tests/unit --cov=cvnf` | 121 passed in 0.38 s; coverage 88% of 994 statements |
+| pipeline tests | `pytest -m pipeline tests/pipeline` | 10 passed in 43.3 s |
+| numeric options | `nextflow run . -profile test --max_cpus 2 --min_stars 1 --max_af 0.01` | 19 tasks succeeded |
+| bad numeric options | `--max_cpus abc`, `--max_cpus 0` | both refused by validation (string; below minimum 1) |
+| shellcheck | `shellcheck scripts/*.sh` | no findings |
+| bats | `bats tests/bats` | 5 passed |
+| nf-test | `nf-test test tests/nf-test` | [CONFIRM: run at the release check] |
+| ruff, mypy, docs build | `make lint typecheck docs` | [CONFIRM: run at the release check] |
+| clean Debian, minimum Nextflow | `scripts/test_linux.sh 26.04.0` | [CONFIRM: run at the release check] |
+| clean Debian, current Nextflow | `scripts/test_linux.sh 26.10.2` | [CONFIRM: run at the release check] |
+| real diff run | see results.md | [CONFIRM: rerun for the v1.0.1 gene rules] |
+
+The real annotate run in results.md is from v1.0.0. v1.0.1 takes review stars from
+CLNREVSTAT when present, which can move the P/LP by stars line. [CONFIRM: annotate rerun
+on the v1.0.1 head.]
+
+## v1.0.0, 2026-10-19
 
 Machine: Apple M-series Mac, macOS, Docker Desktop with Docker 29.8; Nextflow 26.10.2;
 nf-test 0.9.5; Python 3.13.9; bcftools 1.23.1 (Homebrew and BioContainers).
@@ -19,7 +42,7 @@ nf-test 0.9.5; Python 3.13.9; bcftools 1.23.1 (Homebrew and BioContainers).
 | real annotate run | see results.md | 12 tasks succeeded, 30.9 s |
 | real diff run | see results.md | 6 tasks succeeded, 1 min 20 s |
 
-## Deferred, with reason
+## Deferred, with reason (v1.0.0 and v1.0.1)
 
 - Slurm: no cluster was available. The Slurm profile is untested; the sacct parser is tested
   only on hand-written files in the documented format.

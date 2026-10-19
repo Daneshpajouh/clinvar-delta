@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.0.1 (2026-10-19)
+
+- Needs Nextflow 26.04.0 or newer. nf-schema 2.8.0 again: with 2.5.1, numeric options
+  such as `--max_cpus 8` failed validation on Nextflow 26.10 as strings. The minimum is
+  2.8.0's own requirement; 2.8.0 is served only by the Nextflow plugin registry.
+- The run summary is a `workflow.onComplete` handler instead of an `onComplete:` section.
+- `scripts/test_linux.sh NXF_VER` runs both test profiles in a clean Debian 12 image from
+  an empty plugin cache. The README lists `procps` and `tabix`; data terms are recorded as
+  read at source.
+- Diff mode: the panel filter uses genes from both releases, so a gene renamed or dropped
+  in the new release stays in the audit. P/LP losses are credited to the old release's
+  genes and gains to the new release's genes. Malformed, repeated or out-of-order rows are
+  refused with file and line instead of being skipped or reported as removed. The workflow
+  checks it got exactly one pair of ClinVar tables.
+- Review stars come from CLNREVSTAT when present; a `.` CLNSTARS no longer crashes.
+- The VCF reader requires `#CHROM`, one sample and a fixed column count, and refuses
+  unsplit multiallelic records; short ClinVar rows are refused; validation checks gnomAD
+  contigs; MT maps to chrM in the panel BED.
+- Python steps run the staged `src/cvnf` files, so `-resume` reruns them after a code
+  change. The validation join is keyed on sample ID and fails on duplicates or mismatches,
+  every input sample must reach the report, and `run_summary.json` lists hashes from this
+  run's output channels.
+
 ## 1.0.0 (2026-10-19)
 
 First release.
