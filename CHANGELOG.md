@@ -24,6 +24,10 @@
   change. The validation join is keyed on sample ID and fails on duplicates or mismatches,
   every input sample must reach the report, and `run_summary.json` lists hashes from this
   run's output channels.
+- Renamed from clinvar-variant-nf to clinvar-delta. The Python package keeps the name `cvnf`.
+- CI appends the docker profile to nf-test (`--profile +docker`), so each test keeps its own
+  profile; the resume test reads task counts from `run_summary.json` instead of the console.
+- The release image is tagged with the bare version (`1.0.1`), which `conf/base.config` pulls.
 
 ## 1.0.0 (2026-10-19)
 
