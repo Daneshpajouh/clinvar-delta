@@ -4,7 +4,15 @@ from pathlib import Path
 import pytest
 
 from cvnf.cli import main
-from cvnf.diff import DiffStats, Entry, accumulate, classify_change, diff_releases, parse_entries
+from cvnf.diff import (
+    DiffStats,
+    Entry,
+    ParseCounts,
+    accumulate,
+    classify_change,
+    diff_releases,
+    parse_entries,
+)
 
 EXPERT = "reviewed_by_expert_panel"
 SINGLE = "criteria_provided,_single_submitter"
@@ -59,9 +67,11 @@ def test_accession_continuity_across_gaps() -> None:
     assert result == [("removed", 1), ("added", 2), ("unchanged", 3), ("reclassified", 5)]
 
 
-def test_unsorted_input_is_rejected() -> None:
-    with pytest.raises(ValueError, match="not sorted"):
-        list(parse_entries([row(5, "Benign"), row(4, "Benign")]))
+@pytest.mark.parametrize("ids", [(5, 4), (1, 1)], ids=["decreasing", "repeated"])
+def test_unsorted_or_repeated_ids_are_rejected(ids: tuple[int, int]) -> None:
+    rows = [row(ids[0], "Benign"), row(ids[1], "Benign")]
+    with pytest.raises(ValueError, match=f"Variation ID {ids[1]} after {ids[0]}"):
+        list(parse_entries(rows))
 
 
 def test_gene_filter_uses_either_release() -> None:
@@ -69,6 +79,19 @@ def test_gene_filter_uses_either_release() -> None:
     new = list(parse_entries([row(1, "Pathogenic", gene="TP53:7157|WRAP53:55135")]))
     assert [c for c, _, _ in diff_releases(old, new, {"WRAP53"})] == ["annotation_only"]
     assert list(diff_releases(old, new, {"BRCA1"})) == []
+
+
+def test_gene_renamed_in_new_release_stays_in_panel_audit() -> None:
+    old = list(parse_entries([row(1, "Pathogenic", gene="OLDNAME:1")]))
+    new = list(parse_entries([row(1, "Uncertain_significance", gene="NEWNAME:1")]))
+    assert [c for c, _, _ in diff_releases(old, new, {"OLDNAME"})] == ["reclassified"]
+
+
+def test_malformed_rows_are_counted() -> None:
+    counts = ParseCounts()
+    rows = [row(1, "Benign"), "2\t13\t100\n", "x\t13\t1\tA\tG\tBenign\t.\tG:1\n", "\n"]
+    assert [e.vid for e in parse_entries(rows, counts)] == [1]
+    assert (counts.rows, counts.skipped) == (3, 2)
 
 
 def test_stats_track_movement_into_and_out_of_plp() -> None:
@@ -154,3 +177,30 @@ def test_gzip_output_is_byte_identical_between_runs(tmp_path: Path) -> None:
         )
         digests.append(out.read_bytes())
     assert digests[0] == digests[1]
+
+
+def test_cli_fails_and_reports_skipped_rows(tmp_path: Path) -> None:
+    old = tmp_path / "old.tsv"
+    new = tmp_path / "new.tsv"
+    old.write_text(row(1, "Pathogenic") + "2\ttruncated\n")
+    new.write_text(row(1, "Pathogenic"))
+    js = tmp_path / "d.json"
+    code = main(
+        [
+            "diff",
+            "--old",
+            str(old),
+            "--new",
+            str(new),
+            "--old-label",
+            "o",
+            "--new-label",
+            "n",
+            "--out",
+            str(tmp_path / "d.tsv"),
+            "--json",
+            str(js),
+        ]
+    )
+    assert code == 1
+    assert json.loads(js.read_text())["rows_skipped"] == {"old": 1, "new": 0}

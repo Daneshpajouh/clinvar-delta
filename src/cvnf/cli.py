@@ -27,6 +27,7 @@ from cvnf.annotate import (
 from cvnf.diff import (
     CHANGE_COLUMNS,
     DiffStats,
+    ParseCounts,
     accumulate,
     change_row,
     diff_releases,
@@ -272,9 +273,13 @@ def cmd_report(args: argparse.Namespace) -> int:
 def cmd_diff(args: argparse.Namespace) -> int:
     genes = set(read_lines(args.genes)) if args.genes else None
     stats = DiffStats()
+    old_counts, new_counts = ParseCounts(), ParseCounts()
     with open_text(args.old) as old, open_text(args.new) as new, open_text(args.out, "w") as dst:
         dst.write("\t".join(CHANGE_COLUMNS) + "\n")
-        for change, o, n in diff_releases(parse_entries(old), parse_entries(new), genes):
+        entries = diff_releases(
+            parse_entries(old, old_counts), parse_entries(new, new_counts), genes
+        )
+        for change, o, n in entries:
             accumulate(stats, change, o, n)
             if change != "unchanged":
                 dst.write(change_row(change, o, n) + "\n")
@@ -282,9 +287,21 @@ def cmd_diff(args: argparse.Namespace) -> int:
         "old": args.old_label,
         "new": args.new_label,
         "gene_filter": len(genes) if genes else None,
+        "rows_read": {"old": old_counts.rows, "new": new_counts.rows},
+        "rows_skipped": {"old": old_counts.skipped, "new": new_counts.skipped},
         **stats.as_dict(),
     }
     write_text(args.json, to_json(data))
+    if old_counts.skipped or new_counts.skipped:
+        # A skipped row would let the change counts add up to fewer records than the release.
+        fields = {
+            "old": args.old,
+            "old_skipped": old_counts.skipped,
+            "new": args.new,
+            "new_skipped": new_counts.skipped,
+        }
+        log.error("malformed rows", extra={"fields": fields})
+        return 1
     info("diff", **dict(stats.changes))
     return 0
 

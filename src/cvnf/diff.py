@@ -50,15 +50,33 @@ class Entry:
         return review_stars(self.revstat)
 
 
-def parse_entries(lines: Iterable[str]) -> Iterator[Entry]:
+@dataclass
+class ParseCounts:
+    rows: int = 0
+    skipped: int = 0
+
+
+def parse_entries(lines: Iterable[str], counts: ParseCounts | None = None) -> Iterator[Entry]:
+    """Read an ID-sorted table; malformed rows are counted in `counts`, not yielded.
+
+    A repeated or decreasing Variation ID raises: the merge join would otherwise report
+    the second copy of an ID as removed or added.
+    """
+    counts = counts if counts is not None else ParseCounts()
     last = -1
     for raw in lines:
+        if not raw.strip():
+            continue
+        counts.rows += 1
         cols = raw.rstrip("\n").split("\t")
         if len(cols) < 8 or not cols[0].isdigit():
+            counts.skipped += 1
             continue
         vid = int(cols[0])
-        if vid < last:
-            raise ValueError(f"input not sorted by Variation ID at {vid} after {last}")
+        if vid <= last:
+            raise ValueError(
+                f"Variation ID {vid} after {last}: input must be sorted with unique IDs"
+            )
         last = vid
         yield Entry(
             vid, cols[1], cols[2], cols[3], cols[4], cols[5], cols[6], tuple(gene_symbols(cols[7]))
@@ -159,9 +177,10 @@ def diff_releases(
 ) -> Iterator[tuple[str, Entry | None, Entry | None]]:
     """Yield (change, old, new) for every Variation ID, optionally limited to genes."""
     for o, n in merge_join(old, new):
-        ref = n if n is not None else o
-        assert ref is not None
-        if genes is not None and not genes.intersection(ref.genes):
+        # Genes from both releases, so a variant whose gene symbol was renamed or dropped
+        # in the new release stays in the panel audit.
+        names = set(o.genes if o else ()) | set(n.genes if n else ())
+        if genes is not None and not genes & names:
             continue
         yield classify_change(o, n), o, n
 
