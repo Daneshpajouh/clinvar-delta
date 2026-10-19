@@ -2,10 +2,10 @@
 
 A suggested reading order for a reviewer, about 30 minutes.
 
-## 1. `main.nf` (70 lines)
+## 1. `main.nf` (108 lines)
 
 Validates parameters with nf-schema, writes the parameters to a JSON file for the manifest,
-and dispatches on `--mode`. A single entry with a mode parameter, instead of `-entry`,
+dispatches on `--mode`, and writes `run_summary.json` in `onComplete`. A single entry with a mode parameter, instead of `-entry`,
 keeps one schema and one help text for both modes and lets nf-schema reject a wrong mode
 before any work starts. `gitCommit()` reads `.git/HEAD` because `workflow.commitId` is only
 set for pipelines pulled from a remote.

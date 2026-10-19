@@ -15,7 +15,7 @@ nf-test 0.9.5; Python 3.13.9; bcftools 1.23.1 (Homebrew and BioContainers).
 | bats | `bats tests/bats` | 5 passed |
 | docs build | `mkdocs build --strict` | built, no warnings |
 | Docker test profiles | `make image`, then `nextflow run . -profile test,docker` and `-profile test_diff,docker` | 18 tasks in 12.6 s; 6 tasks in 8.8 s |
-| Linux unit check | `python:3.13-slim` container (Linux aarch64): ruff, mypy, pytest tests/unit | passed (89 tests, before the last gzip test was added) |
+| Linux unit check | `python:3.13-slim` container (Linux aarch64): ruff, mypy, pytest tests/unit | 90 passed |
 | real annotate run | see results.md | 12 tasks succeeded, 30.9 s |
 | real diff run | see results.md | 6 tasks succeeded, 1 min 20 s |
 
@@ -26,8 +26,13 @@ nf-test 0.9.5; Python 3.13.9; bcftools 1.23.1 (Homebrew and BioContainers).
 - Apptainer: not available on macOS; `containers/apptainer.def` has not been built.
 - GitHub Actions: the workflows in `.github/workflows/` have not run, because the
   repository has not been pushed.
-- `nf-core pipelines lint`: not run. This pipeline follows several nf-core conventions
-  (nf-schema validation, `modules/local/<name>/main.nf`, `versions.yml` per process, stub
-  blocks, resource labels, `resourceLimits`), but it is not built from the nf-core
-  template and does not claim nf-core compliance.
+- nf-core compliance: `nf-core pipelines lint --dir .` (nf-core/tools 4.1.0) gives 110
+  passed, 13 warnings, 40 failed, 4 ignored. The failures are files and settings of the
+  nf-core template that this pipeline does not use (logos, e-mail templates,
+  CODE_OF_CONDUCT.md, `nf-core/` naming, nf-core institutional configs, sharded nf-test
+  workflows) and `params.max_cpus|memory|time`, which nf-core has replaced with
+  `resourceLimits` alone; here those params set `resourceLimits`. The pipeline follows the
+  nf-core conventions it uses (nf-schema validation, `modules/local/<name>/main.nf`,
+  `versions.yml` per process, stub blocks, resource labels) but does not claim nf-core
+  compliance.
 - Subsample calibration (1, 5, 20 percent) and an IPR-shaped export: ROADMAP.md.
