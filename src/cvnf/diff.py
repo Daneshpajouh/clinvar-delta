@@ -1,7 +1,7 @@
 """Compare two ClinVar releases by Variation ID.
 
 Both inputs are `bcftools query` tables sorted numerically on the ID column, so the
-comparison is a streaming merge join: memory stays flat whatever the release size.
+comparison is a streaming merge join that holds one entry from each input at a time.
 Columns: ID CHROM POS REF ALT CLNSIG CLNREVSTAT GENEINFO.
 """
 

@@ -1,6 +1,6 @@
 """A small streaming VCF reader for single-sample, already normalised files.
 
-bcftools does the heavy lifting in the pipeline; this reader only walks the final
+bcftools normalises and annotates the records; this reader only walks the final
 panel-sized VCF, so it favours plain code over speed. BGZF files are valid gzip
 streams, so the standard gzip module reads them.
 """

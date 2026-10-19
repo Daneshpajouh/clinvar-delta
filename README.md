@@ -15,9 +15,8 @@ ClinVar is updated every week. A variant reported as "uncertain" to a patient la
 may now be "likely pathogenic", and the reverse also happens. Between the 2025-10-13 and
 2026-10-11 releases, 40,961 variants moved to a different classification group, 19,907 of
 them from VUS to conflicting; in the 81 ACMG genes, 183 went from VUS to P/LP and 69 went
-from P/LP to VUS. A lab that
-re-checks its past reports needs exactly this list, with the assertion changes separated
-from ClinVar's own re-annotation. [docs/explainer.md](docs/explainer.md) covers the
+from P/LP to VUS. The diff lists the variants whose reports may need review, with
+assertion changes kept apart from ClinVar's own re-annotation. [docs/explainer.md](docs/explainer.md) covers the
 background for readers who do not work with ClinVar.
 
 ## Quick start

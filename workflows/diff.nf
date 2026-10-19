@@ -14,7 +14,14 @@ workflow CLINVAR_DIFF {
     queried = CLINVAR_QUERY_SORTED.out.tsv
     old_table = queried.filter { role, _label, _tsv -> role == 'old' }.map { _role, label, tsv -> [label, tsv] }
     new_table = queried.filter { role, _label, _tsv -> role == 'new' }.map { _role, label, tsv -> [label, tsv] }
-    tables = old_table.combine(new_table).first()
+    tables = old_table.combine(new_table)
+        .toList()
+        .map { pairs ->
+            if (pairs.size() != 1) {
+                error("expected one old and one new ClinVar table, got ${pairs.size()} pairs")
+            }
+            pairs[0]
+        }
 
     CVNF_DIFF_ALL(tables, channel.value(['all', file("${projectDir}/assets/NO_GENES")]), cvnf_src)
     CVNF_DIFF_PANEL(tables, genes.map { g -> ['panel', g] }, cvnf_src)

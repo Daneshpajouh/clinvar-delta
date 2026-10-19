@@ -1,7 +1,7 @@
 # Operations notes
 
-Failures hit while building v1.0.0 on 2026-10-19, in the order they happened, with the
-fix that is now in the code.
+Failures hit while building v1.0.0 and v1.0.1 on 2026-10-19, in the order they happened,
+with the fix that is now in the code.
 
 ## 1. NCBI FTP listing hung for two minutes
 
@@ -33,8 +33,9 @@ After removing a `.first()` that Nextflow had warned was useless, the test run c
 with `[SUCCESS]`, but only SYNTH01 had a report. The ClinVar annotation channel came from
 `combine` on two value channels, which returns a queue channel; BCFTOOLS_ANNOTATE consumed
 its single item with the first sample and never ran for HG002. Nextflow reported no error.
-`pytest -m pipeline` caught it because it opens both samples' reports. The `.first()` is
-back with a comment, and the pipeline tests assert on every sample.
+`pytest -m pipeline` caught it because it opens both samples' reports. The channel is now
+collected and checked to hold one item, the workflow fails if any input sample has no
+report, and the pipeline tests assert on every sample.
 
 Lesson kept: a pipeline test must check outputs for every input, not only that the run
 succeeded.
@@ -53,3 +54,27 @@ checkout) or rebuild before any run whose numbers are kept.
 Runs with the `standard` profile on macOS print "Task runtime metrics are not reported when
 using macOS without a container engine", and the trace has no `%cpu` or `peak_rss`. All
 profiling numbers in the docs come from `-profile docker` runs.
+
+## 7. nf-schema 2.8.0 could not be installed by Nextflow 25.04 (v1.0.1)
+
+A verification run of v1.0.0 in a clean Linux container with Nextflow 25.04.6 stopped with
+`Plugin nf-schema with version @2.8.0 does not exist in the repository`. Releases after
+2.5.1 are published only to the new Nextflow plugin registry, which 25.04 does not read;
+the development machine had 2.8.0 in its local plugin cache, so every local run passed.
+v1.0.1 pins 2.5.1, the newest release in the legacy `plugins.json`, whose own minimum is
+Nextflow 25.04.0. `scripts/test_linux.sh` now runs the test profiles from an empty plugin
+cache with Nextflow 25.04.0 and 26.10.2.
+
+## 8. `onComplete:` section rejected by Nextflow 25.04 (v1.0.1)
+
+The first clean-container run with 25.04.0 then failed at compile time with
+`Unknown execution scope 'onComplete:'`. The entry workflow now registers
+`workflow.onComplete { writeRunSummary() }`. Inside that closure `workflow` and `params`
+resolved to the handler's delegate and were null (`Cannot get property 'success' on null
+object`), so all the work, including the final log line, is in the script function.
+
+## 9. Tasks fail without `ps` on a minimal Debian image
+
+With `procps` removed, every task fails with `Command 'ps' required by nextflow to collect
+task metrics cannot be found`. The tools image installs `procps`; the README lists it for
+runs without containers.

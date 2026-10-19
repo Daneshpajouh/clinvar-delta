@@ -40,13 +40,16 @@ commit, the Nextflow version, the run start time and the container image per too
 
 The workflow's `onComplete` handler writes `pipeline_info/run_summary.json` after success
 and after failure: status, start and end time, duration, task counts (succeeded, cached,
-failed, retried), the error message, and every published file with its SHA-256.
+failed, retried), the error message, and the SHA-256 and size of each file this run
+produced. The list comes from `pipeline_info/outputs.sha256.json`, written by
+CVNF_OUTPUT_HASHES from the output channels, so files left in the output directory by
+earlier runs are not included.
 
 ```json
 {"status": "success", "duration_ms": 3955, "nextflow": "26.10.2",
  "tasks": {"succeeded": 18, "cached": 0, "failed": 0, "ignored": 0, "retried": 0},
  "error": null,
- "outputs": {"bcftools_annotate/HG002.annotated.vcf.gz": "46243989a07c...", "...": "..."}}
+ "outputs": {"HG002.annotated.vcf.gz": {"bytes": "...", "sha256": "..."}, "...": "..."}}
 ```
 
 Nextflow also writes `execution_report.html`, `execution_timeline.html` and

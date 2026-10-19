@@ -16,13 +16,18 @@ set for pipelines pulled from a remote.
 The data flow, in order: pad the panel, validate each sample, prepare ClinVar, prefilter,
 normalise, annotate, filter, report. Points to look at:
 
-- Validation output is joined back to the samples, so a sample that fails validation
-  never reaches bcftools.
+- Each sample waits for its validation report before normalisation; reference
+  preparation runs independently. The join is keyed on the sample ID with
+  `failOnDuplicate` and `failOnMismatch`, and the workflow fails if any input sample has
+  no report at the end.
 - The prefilter uses the panel padded by 1 kb. An indel can move left during
   normalisation; filtering on the exact gene boundaries first would drop one that starts
   just outside and ends inside.
-- `clinvar_annotation` ends in `.first()`. `combine` returns a queue channel, and without
-  `.first()` only the first sample was annotated. The comment records why.
+- `clinvar_annotation` is collected with `toList()` and checked to hold exactly one item.
+  `combine` returns a queue channel, and when it was used directly only the first sample
+  was annotated (operations.md, failure 4).
+- Every cvnf process stages `src/cvnf/*.py` as an input and runs that copy, so editing
+  the Python source reruns those tasks on `-resume`.
 
 ## 3. `modules/local/*/main.nf`
 
@@ -84,8 +89,8 @@ end-to-end, resume and stub runs. See testing.md.
 
 - Python with no third-party dependencies: the tools image is the slim Python base plus
   `procps`, and the code runs anywhere Python 3.11 does. The cost is a hand-written VCF
-  reader, which is fine for panel-sized files but would be slow for a whole genome; the
-  bcftools steps carry the heavy work.
+  reader, which is fine for panel-sized files but would be slow for a whole genome;
+  bcftools normalises and annotates the records.
 - bcftools over a VEP or SnpEff annotation: ClinVar and gnomAD matching needs exact allele
   matches, which `bcftools annotate` does after normalisation. Consequence annotation
   (HGVS, transcript) is not part of v1.0.
