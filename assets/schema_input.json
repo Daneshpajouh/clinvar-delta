@@ -4,6 +4,7 @@
     "title": "clinvar-delta samplesheet",
     "description": "One row per sample: a single-sample, bgzipped and indexed germline VCF on GRCh38 with chr-prefixed contigs.",
     "type": "array",
+    "minItems": 1,
     "items": {
         "type": "object",
         "properties": {

@@ -55,7 +55,8 @@
                     "type": "string",
                     "description": "Gene panel BED: chrom, start, end, gene symbol.",
                     "format": "file-path",
-                    "exists": true
+                    "exists": true,
+                    "pattern": "^\\S+\\.bed$"
                 },
                 "prefilter_panel": {
                     "type": "boolean",
