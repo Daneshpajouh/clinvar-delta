@@ -53,7 +53,7 @@ from cvnf.profiling import (
     summarise,
 )
 from cvnf.report import render
-from cvnf.vcf import VcfFormatError, open_text, read_vcf
+from cvnf.vcf import VcfFormatError, open_text, read_vcf, tabix_names
 
 log = logging.getLogger("cvnf")
 
@@ -140,11 +140,19 @@ def cmd_clinvar_table(args: argparse.Namespace) -> int:
     return 0
 
 
-def first_record_contig(path: str) -> tuple[list[str], str | None]:
+def record_contigs(path: str) -> tuple[list[str], set[str]]:
+    """Sample names and every contig that holds a record.
+
+    Read from the tabix index when one sits beside the file, otherwise from every record.
+    Checking only the first record let a later chromosome named in the other style (1 next
+    to chr1) through, and bcftools then skipped its records without an error.
+    """
     with open_text(path) as handle:
         vcf = read_vcf(handle, path)
-        first = next(vcf.records, None)
-    return vcf.samples, first.chrom if first else None
+        index = Path(f"{path}.tbi")
+        if index.is_file():
+            return vcf.samples, set(tabix_names(index))
+        return vcf.samples, {record.chrom for record in vcf.records}
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
@@ -157,11 +165,13 @@ def cmd_validate(args: argparse.Namespace) -> int:
     problems: list[str] = []
     samples: list[str] = []
     try:
-        samples, chrom = first_record_contig(args.vcf)
-        if chrom is None:
+        samples, contigs = record_contigs(args.vcf)
+        if not contigs:
             problems.append("VCF has no records")
-        elif chrom not in fai:
-            problems.append(f"VCF contigs missing from reference: {chrom}")
+        elif not contigs <= fai:
+            problems.append(
+                f"VCF contigs missing from reference: {', '.join(sorted(contigs - fai))}"
+            )
     except VcfFormatError as exc:
         problems.append(str(exc))
     try:
@@ -175,9 +185,10 @@ def cmd_validate(args: argparse.Namespace) -> int:
         )
     if args.gnomad:
         try:
-            _, gnomad_chrom = first_record_contig(args.gnomad)
-            if gnomad_chrom is not None and gnomad_chrom not in fai:
-                problems.append(f"gnomAD contigs missing from reference: {gnomad_chrom}")
+            _, gnomad_contigs = record_contigs(args.gnomad)
+            if not gnomad_contigs <= fai:
+                missing = ", ".join(sorted(gnomad_contigs - fai))
+                problems.append(f"gnomAD contigs missing from reference: {missing}")
         except VcfFormatError as exc:
             problems.append(str(exc))
     result = {

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import gzip
 import io
+import struct
 import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -151,3 +152,15 @@ def header_contigs(lines: list[str]) -> list[str]:
                 if key == "ID":
                     out.append(value)
     return out
+
+
+def tabix_names(path: str | Path) -> list[str]:
+    """Contig names in a tabix (.tbi) index: every contig that holds a record."""
+    with gzip.open(path, "rb") as handle:
+        # magic, then n_ref, format, col_seq, col_beg, col_end, meta, skip, l_nm (int32 each)
+        head = handle.read(36)
+        if len(head) < 36 or head[:4] != b"TBI\x01":
+            raise VcfFormatError(f"{path}: not a tabix index")
+        (names_length,) = struct.unpack("<i", head[32:36])
+        names = handle.read(names_length)
+    return [name.decode() for name in names.split(b"\0") if name]

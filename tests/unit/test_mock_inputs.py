@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from cvnf.cli import main
-from cvnf.vcf import VcfFormatError, open_text, read_vcf
+from cvnf.vcf import VcfFormatError, open_text, read_vcf, tabix_names
 
 MOCK = Path(__file__).resolve().parents[1] / "data" / "mock"
 
@@ -322,3 +322,36 @@ def test_manifest_hashes_each_input_and_refuses_a_missing_one(tmp_path: Path) ->
         run("manifest", "--engine", "nextflow 24.10.4", "--out", str(out), str(bed), str(missing))
         == 1
     )
+
+
+def test_validate_reads_past_the_first_record(tmp_path: Path) -> None:
+    # The first record matches the reference; the second uses bare names.
+    vcf = tmp_path / "mixed.vcf"
+    vcf.write_text(SAMPLE.format(c="chr1") + "2\t200\t.\tC\tT\t.\t.\t.\tGT\t0/1\n")
+    fai = tmp_path / "ref.fa.fai"
+    fai.write_text("chr1\t1000\t6\t60\t61\nchr2\t1000\t1030\t60\t61\n")
+    panel = tmp_path / "panel.bed"
+    panel.write_text("chr1\t50\t300\tGENE1\n")
+    out = tmp_path / "v.json"
+    code = run(
+        "validate",
+        "--sample",
+        "S1",
+        "--vcf",
+        str(vcf),
+        "--fai",
+        str(fai),
+        "--panel",
+        str(panel),
+        "--out",
+        str(out),
+    )
+    assert code == 1
+    assert json.loads(out.read_text())["problems"] == ["VCF contigs missing from reference: 2"]
+
+
+def test_tabix_index_lists_every_contig_with_records() -> None:
+    data = MOCK.parent
+    # `tabix -l` on the same files prints these names.
+    assert tabix_names(data / "HG002.subset.vcf.gz.tbi") == ["chr13", "chr17"]
+    assert tabix_names(data / "SYNTH01.vcf.gz.tbi") == ["chr13"]
