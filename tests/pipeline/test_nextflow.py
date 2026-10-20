@@ -214,3 +214,31 @@ def test_resume_reruns_python_steps_after_a_source_change(tmp_path: Path) -> Non
     # because they take the padded panel written by CVNF_PANEL_PAD, a cvnf task.
     assert status["ANNOTATE:TABIX_PANEL (panel.bed)"] == "CACHED"
     assert status["ANNOTATE:BCFTOOLS_NORM (HG002)"] == "COMPLETED"
+
+
+def test_annotations_already_in_the_input_are_replaced(tmp_path: Path) -> None:
+    # chr13:32315700 G>T is in BRCA2 but in neither the ClinVar nor the gnomAD subset, so
+    # every ClinVar and frequency value it carries in here must be gone from the report.
+    vcf = tmp_path / "preannotated.vcf"
+    vcf.write_text(
+        "##fileformat=VCFv4.2\n"
+        '##INFO=<ID=CLNSIG,Number=.,Type=String,Description="from another tool">\n'
+        '##INFO=<ID=CLNREVSTAT,Number=.,Type=String,Description="from another tool">\n'
+        '##INFO=<ID=gnomAD_AF,Number=1,Type=Float,Description="from another tool">\n'
+        '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n'
+        "##contig=<ID=chr13,length=114364328>\n"
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tPRE01\n"
+        "chr13\t32315700\t.\tG\tT\t50\tPASS\tCLNSIG=Pathogenic;"
+        "CLNREVSTAT=reviewed_by_expert_panel;gnomAD_AF=0.0001\tGT\t0/1\n"
+    )
+    subprocess.run(["bgzip", "-f", str(vcf)], check=True)
+    subprocess.run(["tabix", "-p", "vcf", f"{vcf}.gz"], check=True)
+    sheet = tmp_path / "samplesheet.csv"
+    sheet.write_text(f"sample,vcf,tbi\nPRE01,{vcf}.gz,{vcf}.gz.tbi\n")
+    nextflow("-profile", PROFILE, "--input", str(sheet), "--outdir", "results", cwd=tmp_path)
+    report = json.loads((tmp_path / "results/report/PRE01.report.json").read_text())
+    assert report["panel_variants"] == 1
+    assert report["plp_any_review"] == 0
+    with (tmp_path / "results/cvnf_filter/PRE01.panel_variants.tsv").open() as handle:
+        (row,) = csv.DictReader(handle, delimiter="\t")
+    assert (row["clnsig"], row["gnomad_af"], row["reportable"]) == (".", ".", "no")

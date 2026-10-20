@@ -7,7 +7,7 @@ v1.0.1 is in [test_report.md](test_report.md).
 |---|---|---|---|---|
 | Unit and CLI (pytest) | `make test-unit` | 135 | 0.4 s | classification and star mapping, diff categories, merge-join order, parsing of traces and sacct, report contents, bad inputs |
 | Module (nf-test) | `make nf-test` | 11 module tests, 3 pipeline tests | 63 s | each process's command line, inputs and outputs, snapshots of outputs |
-| Pipeline (pytest + Nextflow) | `make test-pipeline` | 10 | 43 s | channel wiring, both modes end to end, `-resume`, `-stub-run`, samplesheet validation |
+| Pipeline (pytest + Nextflow) | `make test-pipeline` | 11 | 43 s | channel wiring, both modes end to end, `-resume`, `-stub-run`, samplesheet validation |
 | Validation (real data) | commands in results.md | 2 runs | 31 s and 80 s | counts that must add up, checksums of inputs, comparison with known values |
 
 ## Portability check

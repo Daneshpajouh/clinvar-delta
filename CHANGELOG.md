@@ -12,6 +12,9 @@
 - `cvnf profile-sacct` multiplies a per-CPU `ReqMem` (`2000Mc`, Slurm before 21.08) by the
   allocated CPUs.
 - `cvnf manifest` refuses an input that is not a readable file instead of leaving it out.
+- An input VCF that already carries ClinVar, gnomAD or panel tags (from another run) has
+  them removed before annotation; a variant absent from this ClinVar release used to keep
+  its old CLNSIG and could be counted as P/LP.
 - Validation reads every contig that holds records (from the tabix index, else from all
   records), not only the first record's.
 - `run_summary.json` lists output hashes only for a successful run; a failed rerun used to

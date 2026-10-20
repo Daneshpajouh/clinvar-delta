@@ -22,7 +22,11 @@ process BCFTOOLS_ANNOTATE {
 
     # The gnomAD pass reads the indexed input file directly: bcftools 1.23 cannot pair a
     # VCF annotation source with a streamed input. Table and BED sources stream fine.
-    bcftools annotate --no-version -a ${gnomad} -c 'INFO/gnomAD_AF:=INFO/AF' -Ou ${vcf} \\
+    # It first drops any of our tags already in the input (an annotated VCF from another
+    # run), so a variant missing from this ClinVar or gnomAD release carries no old value.
+    bcftools annotate --no-version \\
+        -x INFO/gnomAD_AF,INFO/CLNVID,INFO/CLNSIG,INFO/CLNREVSTAT,INFO/CLNSTARS,INFO/CLNGROUP,INFO/CLNGENE,INFO/PANEL_GENE \\
+        -a ${gnomad} -c 'INFO/gnomAD_AF:=INFO/AF' -Ou ${vcf} \\
         | bcftools annotate --no-version -a ${clinvar_table} -h ${clinvar_header} \\
             -c CHROM,POS,REF,ALT,CLNVID,CLNSIG,CLNREVSTAT,CLNSTARS,CLNGROUP,CLNGENE -Ou \\
         | bcftools annotate --no-version -a ${panel_bed} -h panel.header.txt \\
