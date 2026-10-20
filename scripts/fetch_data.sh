@@ -18,6 +18,9 @@ readonly ENSEMBL_REST="https://rest.ensembl.org"
 readonly ACMG_PAGE="https://www.ncbi.nlm.nih.gov/clinvar/docs/acmg/"
 readonly GNOMAD_BASE="https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1/vcf/genomes"
 readonly CHROMS="${CHROMS:-1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X}"
+# The panel stage runs the checkout's cvnf, so nothing needs to be installed first.
+CVNF="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/bin/cvnf"
+readonly CVNF
 
 DRY_RUN=0
 
@@ -132,14 +135,14 @@ stage_panel() {
 	fi
 	local symbols="${DATA_DIR}/panel/acmg_sf_genes.txt"
 	local lookup="${DATA_DIR}/panel/ensembl_lookup.json"
-	cvnf panel-symbols --html "${DATA_DIR}/panel/acmg_sf_page.html" --out "${symbols}"
+	"${CVNF}" panel-symbols --html "${DATA_DIR}/panel/acmg_sf_page.html" --out "${symbols}"
 	if [[ ! -s ${lookup} ]]; then
-		cvnf panel-request-body --symbols "${symbols}" |
+		"${CVNF}" panel-request-body --symbols "${symbols}" |
 			curl -fsS --retry 3 -m 120 -H 'Content-Type: application/json' -H 'Accept: application/json' \
 				-X POST --data @- "${ENSEMBL_REST}/lookup/symbol/homo_sapiens" -o "${lookup}"
 		record panel "${ENSEMBL_REST}/lookup/symbol/homo_sapiens (POST)" "${lookup}"
 	fi
-	cvnf panel-bed --lookup "${lookup}" --symbols "${symbols}" --out "${DATA_DIR}/panel/acmg_sf_v3.2.grch38.bed"
+	"${CVNF}" panel-bed --lookup "${lookup}" --symbols "${symbols}" --out "${DATA_DIR}/panel/acmg_sf_v3.2.grch38.bed"
 }
 
 stage_gnomad() {
@@ -182,6 +185,8 @@ main() {
 	DATA_DIR=$1
 	shift
 	mkdir -p "${DATA_DIR}"
+	# Absolute, because the gnomAD stage changes directory before it uses these paths.
+	DATA_DIR=$(cd "${DATA_DIR}" && pwd)
 	local stage
 	for stage in "$@"; do
 		case ${stage} in

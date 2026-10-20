@@ -37,3 +37,11 @@ setup() {
 	[ "$status" -eq 0 ]
 	[ "$(grep -c 'would fetch' <<<"$output")" -eq 3 ]
 }
+
+@test "a relative DATA_DIR is planned as an absolute path" {
+	cd "${BATS_TEST_TMPDIR}"
+	run "${SCRIPT}" --dry-run rel_data clinvar
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"-> ${BATS_TEST_TMPDIR}/rel_data/clinvar/clinvar_20261011.vcf.gz"* ]] ||
+		[[ "$output" == *"-> $(cd "${BATS_TEST_TMPDIR}" && pwd -P)/rel_data/clinvar/clinvar_20261011.vcf.gz"* ]]
+}
