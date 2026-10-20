@@ -6,4 +6,4 @@ if sys.version_info < (3, 11):  # noqa: UP036
     found = sys.version.split()[0]
     raise SystemExit(f"cvnf needs Python 3.11 or newer; {sys.executable} is {found}")
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"

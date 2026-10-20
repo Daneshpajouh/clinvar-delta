@@ -56,7 +56,7 @@ jobs:
       # bgzip and tabix on the host: one test compresses and indexes its own input VCF
       - run: sudo apt-get update && sudo apt-get install -y tabix
       - name: Build the tools image used by the docker profile
-        run: docker build -f containers/Dockerfile -t ghcr.io/daneshpajouh/clinvar-delta:1.0.1 .
+        run: docker build -f containers/Dockerfile -t ghcr.io/daneshpajouh/clinvar-delta:1.0.2 .
       - name: Pipeline tests (test profile, diff profile, resume, stub run)
         run: pytest -m pipeline tests/pipeline
       - name: nf-test modules and pipeline

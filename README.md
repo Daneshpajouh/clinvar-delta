@@ -53,9 +53,9 @@ after Nextflow downloads the nf-schema plugin on first use. `bin/cvnf` runs the 
 tools from the checkout.
 
 With Docker instead of local tools, add the profile: `-profile test,docker`. The tools
-image `ghcr.io/daneshpajouh/clinvar-delta:1.0.1` is pulled on first use (`make image`
+image `ghcr.io/daneshpajouh/clinvar-delta:1.0.2` is pulled on first use (`make image`
 builds it locally instead). On 2026-10-19 the test profile ran this way from the published
-image in 17 s on the Mac (19 tasks), and test_diff in 8 s (7 tasks). The test profiles
+1.0.1 image in 17 s on the Mac (19 tasks), and test_diff in 8 s (7 tasks). The test profiles
 read `tests/data` by relative path, so run them from the clone root.
 
 ## Real-data results

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.2 (2026-10-19)
 
 - `cvnf diff --genes` refuses an empty gene list; it used to drop every record and write a
   JSON that read as an unfiltered release with no changes.
