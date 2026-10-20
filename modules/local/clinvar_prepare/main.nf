@@ -25,6 +25,10 @@ process CLINVAR_PREPARE {
         { t = (\$1 == "MT") ? "chrM" : (\$1 ~ /^chr/ ? \$1 : "chr" \$1); if (t in ref) print \$1, t }' \\
         ref_contigs.txt clinvar_contigs.txt > rename.tsv
     cut -f2 rename.tsv | paste -sd, - > keep_targets.txt
+    if [[ ! -s rename.tsv ]]; then
+        echo "no ClinVar contig maps onto a reference contig; the reference must use chr-prefixed GRCh38 names" >&2
+        exit 1
+    fi
 
     bcftools annotate --no-version --rename-chrs rename.tsv \\
         -x '^INFO/CLNSIG,INFO/CLNREVSTAT,INFO/GENEINFO' -Ou ${clinvar} \\
