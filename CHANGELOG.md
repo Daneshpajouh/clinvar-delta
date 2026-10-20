@@ -21,6 +21,9 @@
   no ClinVar contig maps onto the reference instead of keeping nothing.
 - The samplesheet needs at least one row and `--panel` a `.bed` file.
 - `release.yml` runs CI on the tagged commit before it publishes the image and release.
+- The run manifest stages each input in its own folder: two samples whose VCFs share a
+  file name (`A/calls.vcf.gz`, `B/calls.vcf.gz`) no longer stop the run at its last step,
+  and both keep their entry.
 - `scripts/fetch_data.sh` runs the checkout's `bin/cvnf` and accepts a relative DATA_DIR.
 - Diff classes are described by the fields that changed; the report no longer says who
   made a change. An empty P/LP section in the panel report says "None.".

@@ -9,6 +9,7 @@ import logging
 import platform
 import sys
 import time
+from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -428,13 +429,17 @@ def sha256(path: Path) -> str:
 
 
 def cmd_manifest(args: argparse.Namespace) -> int:
-    files = {}
-    for item in args.inputs:
-        path = Path(item)
+    paths = [Path(item) for item in args.inputs]
+    for path in paths:
         if not path.is_file():
             # A manifest that leaves out an input would misstate what the run read.
-            raise ValueError(f"{item}: input is not a readable file")
-        files[path.name] = {"sha256": sha256(path), "bytes": path.stat().st_size}
+            raise ValueError(f"{path}: input is not a readable file")
+    names = Counter(path.name for path in paths)
+    files = {}
+    for path in paths:
+        # A repeated file name keeps its staging folder, so neither entry overwrites the other.
+        key = path.name if names[path.name] == 1 else f"{path.parent.name}/{path.name}"
+        files[key] = {"sha256": sha256(path), "bytes": path.stat().st_size}
     manifest = {
         "pipeline": "clinvar-delta",
         "version": __version__,

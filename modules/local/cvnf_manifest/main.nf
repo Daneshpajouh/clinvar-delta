@@ -3,7 +3,8 @@ process CVNF_MANIFEST {
     label 'cvnf'
 
     input:
-    path inputs, stageAs: 'inputs/*'
+    // One folder per input, so two samples' calls.vcf.gz do not collide when staged.
+    path inputs, stageAs: 'inputs/?/*'
     path params_json
     val git_commit
     val containers
@@ -17,7 +18,7 @@ process CVNF_MANIFEST {
     """
     PYTHONPATH=cvnf_pkg python3 -m cvnf manifest --engine 'nextflow ${workflow.nextflow.version}' --git-commit '${git_commit}' \\
         --params ${params_json} --containers '${containers}' --started '${started}' \\
-        --out run_manifest.json inputs/*
+        --out run_manifest.json inputs/*/*
     """
 
     stub:

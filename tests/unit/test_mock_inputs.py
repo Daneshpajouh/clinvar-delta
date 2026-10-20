@@ -382,3 +382,19 @@ def test_report_says_none_when_the_panel_has_no_plp(tmp_path: Path) -> None:
     )
     assert code == 0
     assert "## All ClinVar P/LP variants in the panel\n\nNone.\n" in md.read_text()
+
+
+def test_manifest_keeps_two_inputs_with_the_same_file_name(tmp_path: Path) -> None:
+    # The pipeline stages each input in its own folder (inputs/1/, inputs/2/, ...).
+    for folder, text in (
+        ("1", "chr13\t32315507\t32400268\tBRCA2\n"),
+        ("2", "chr17\t7661779\t7687538\tTP53\n"),
+    ):
+        (tmp_path / folder).mkdir()
+        (tmp_path / folder / "panel.bed").write_text(text)
+    out = tmp_path / "m.json"
+    staged = [str(tmp_path / f / "panel.bed") for f in ("1", "2")]
+    assert run("manifest", "--engine", "nextflow 26.10.2", "--out", str(out), *staged) == 0
+    inputs = json.loads(out.read_text())["inputs"]
+    assert sorted(inputs) == ["1/panel.bed", "2/panel.bed"]
+    assert inputs["1/panel.bed"]["sha256"] != inputs["2/panel.bed"]["sha256"]
