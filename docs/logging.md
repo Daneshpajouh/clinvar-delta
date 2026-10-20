@@ -1,7 +1,7 @@
 # Logging
 
-Examples are from `nextflow run . -profile test -ansi-log false --outdir results_test2`
-on 2026-10-19.
+Examples are from `nextflow run . -profile test,docker -ansi-log false` on 2026-10-19 at
+17:05 Pacific (cvnf 1.0.1, Nextflow 26.10.2).
 
 ## Run manifest
 
@@ -12,7 +12,7 @@ commit, the Nextflow version, the run start time and the container image per too
 
 ```json
 "engine": "nextflow 26.10.2",
-"run_started": "2026-10-19T11:59:39.367056-07:00",
+"run_started": "2026-10-19T17:05:25.272398-07:00",
 "inputs": {"clinvar_20261011.subset.vcf.gz": {"bytes": 644594, "sha256": "..."}}
 ```
 
@@ -26,14 +26,14 @@ commit, the Nextflow version, the run start time and the container image per too
   `.command.trace`. The `cvnf` steps log JSON lines with a UTC timestamp and level:
 
 ```json
-{"command": "filter", "event": "start", "level": "info", "ts": "2026-10-19T18:21:25Z", "version": "1.0.0"}
-{"event": "filter", "level": "info", "panel_variants": 8, "reportable": 6, "sample": "SYNTH01", "ts": "..."}
+{"command": "filter", "event": "start", "level": "info", "ts": "2026-10-20T00:05:38Z", "version": "1.0.1"}
+{"event": "filter", "level": "info", "panel_variants": 145, "reportable": 0, "sample": "HG002", "ts": "2026-10-20T00:05:38Z"}
 ```
 
   A failing step logs the error and the files it was given:
 
 ```json
-{"command": "filter", "error": "line 4: expected 8+ tab-separated columns with a numeric POS", "event": "failed", "inputs": ["tests/data/mock/malformed.vcf", ...], "level": "error", ...}
+{"command": "filter", "error": "tests/data/mock/malformed.vcf: line 4: expected 10 tab-separated columns with a numeric POS, got 4", "event": "failed", "inputs": [...], "level": "error", ...}
 ```
 
 ## Run summary
@@ -43,11 +43,12 @@ and after failure: status, start and end time, duration, task counts (succeeded,
 failed, retried), the error message, and the SHA-256 and size of each file this run
 produced. The list comes from `pipeline_info/outputs.sha256.json`, written by
 CVNF_OUTPUT_HASHES from the output channels, so files left in the output directory by
-earlier runs are not included.
+earlier runs are not included. After a failure the list is empty, because the file in the
+output directory would be the previous run's.
 
 ```json
-{"status": "success", "duration_ms": 3955, "nextflow": "26.10.2",
- "tasks": {"succeeded": 18, "cached": 0, "failed": 0, "ignored": 0, "retried": 0},
+{"status": "success", "duration_ms": 17192, "nextflow": "26.10.2",
+ "tasks": {"succeeded": 19, "cached": 0, "failed": 0, "ignored": 0, "retried": 0},
  "error": null,
  "outputs": {"HG002.annotated.vcf.gz": {"bytes": "...", "sha256": "..."}, "...": "..."}}
 ```

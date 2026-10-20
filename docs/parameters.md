@@ -1,6 +1,6 @@
 # Parameters
 
-Generated from `nextflow_schema.json`; nf-schema validates every run against it.
+Matches `nextflow_schema.json`; nf-schema validates every run against it.
 
 ## Mode
 

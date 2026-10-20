@@ -12,10 +12,10 @@ percent, with both numbers in docs/profiling.md.
 ## 1.2: IPR-compatible export
 
 An optional JSON output shaped to match the public germline upload schema of the
-open-source PORI IPR reporting system (`app/schemas/germlineSmallMutation/upload.js` in the
-pori_ipr_api repository: top-level project, version, source, rows; row fields such as
-gene, chromosome, position, reference, alteration, zygosityGermline, clinvar, clinvarIds,
-gmaf).
+open-source PORI IPR reporting system (pori_ipr_api: top-level project, version, source
+and rows in `app/schemas/germlineSmallMutation/upload.js`; row fields such as gene,
+chromosome, position, reference, alteration, zygosityGermline, clinvar, clinvarIds and
+gmaf in `app/models/germlineSmallMutation/variants.js`).
 
 Done when the output validates against a JSON Schema transcribed from that file, with the
 transcription date recorded.

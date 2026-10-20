@@ -12,8 +12,7 @@ nav:
   - Logging: logging.md
   - Testing: testing.md
   - Test report v1.0.1: test_report.md
-  - Code walk-through: code_walkthrough.md
-  - Maintenance SOP: sop.md
+  - Maintenance: sop.md
   - Operations notes: operations.md
   - Data sources: data_sources.md
   - Example reports:

@@ -5,8 +5,8 @@ v1.0.1 is in [test_report.md](test_report.md).
 
 | Layer | Command | Tests | Run time | What it catches |
 |---|---|---|---|---|
-| Unit and CLI (pytest) | `make test-unit` | 121 | 0.4 s | classification and star mapping, diff categories, merge-join order, parsing of traces and sacct, report contents, bad inputs |
-| Module (nf-test) | `make nf-test` | 11 module tests, 3 pipeline tests (v1.0.0 count) | 63 s | each process's command line, inputs and outputs, snapshots of outputs |
+| Unit and CLI (pytest) | `make test-unit` | 135 | 0.4 s | classification and star mapping, diff categories, merge-join order, parsing of traces and sacct, report contents, bad inputs |
+| Module (nf-test) | `make nf-test` | 11 module tests, 3 pipeline tests | 63 s | each process's command line, inputs and outputs, snapshots of outputs |
 | Pipeline (pytest + Nextflow) | `make test-pipeline` | 10 | 43 s | channel wiring, both modes end to end, `-resume`, `-stub-run`, samplesheet validation |
 | Validation (real data) | commands in results.md | 2 runs | 31 s and 80 s | counts that must add up, checksums of inputs, comparison with known values |
 
@@ -22,10 +22,9 @@ run for 26.04.0 (the declared minimum) and the current release.
 ## Unit and CLI layer
 
 `tests/unit/`, pure Python, no network or external tools. Coverage of `src/cvnf` from
-`pytest tests/unit --cov=cvnf` on 2026-10-19: 88% of 942 statements. By module: clinvar
-100%, diff 99%, annotate 98%, profiling 94%, report 92%, vcf 92%, panel 85%, cli 73%
-(the uncovered CLI lines are the panel and manifest commands, which the pipeline layer
-runs).
+`pytest tests/unit --cov=cvnf` on 2026-10-19: 90% of 1,032 statements. By module:
+clinvar, diff and report 100%, annotate 98%, profiling 94%, vcf 93%, panel 90%, cli 78%
+(the uncovered CLI lines are mostly the panel commands, which the pipeline layer runs).
 
 Notable cases:
 
@@ -63,14 +62,14 @@ CVNF_MANIFEST, which run in the pipeline tests.
 - a multiallelic record becomes two records;
 - HG002 gives 0 P/LP in the three test genes;
 - every `pipeline_info` file exists and the manifest holds a SHA-256 for each input;
-- `-resume` reuses all 15 analysis tasks (only the run manifest is rebuilt) and the report
-  and table files are byte-identical;
-- `-stub-run` completes with all 12 processes of a one-sample run;
+- `-resume` reruns only the run manifest, takes every other task from the cache, and the
+  report and table files are byte-identical;
+- `-stub-run` completes with all 13 processes of a one-sample run;
 - a samplesheet with a bad sample name and missing files is rejected by nf-schema;
 - diff mode on the bundled subsets reports reclassifications.
 
-This layer found a real bug on 2026-10-19: one of two samples was silently not annotated
-(see operations.md).
+On 2026-10-19 this layer caught a sample that was never annotated (operations.md,
+failure 4).
 
 ## Validation layer
 

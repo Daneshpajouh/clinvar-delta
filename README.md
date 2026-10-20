@@ -7,7 +7,7 @@ A Nextflow pipeline that does two things with ClinVar:
    (here the 81 ACMG SF v3.2 genes) that ClinVar calls pathogenic or likely pathogenic.
 2. Release audit: compares two ClinVar releases variant by variant and reports what
    changed: reclassifications (for example VUS to likely pathogenic), changes in review
-   level, new and withdrawn records, and changes that are only re-annotation by ClinVar.
+   level, new and withdrawn records, and changes to location, allele or gene alone.
 
 ## Reclassification audit
 
@@ -15,11 +15,11 @@ ClinVar is updated every week. A variant reported as "uncertain" to a patient la
 may now be "likely pathogenic", and the reverse also happens. Between the 2025-10-13 and
 2026-10-11 releases, 40,961 variants moved to a different classification group, 19,907 of
 them from VUS to conflicting; in the 81 ACMG genes, 183 went from VUS to P/LP and 69 went
-from P/LP to VUS. (clinvar-history counts 20,364 VUS to conflicting from the monthly
-`variant_summary` files of 2025-10 and 2026-10; the files and dates differ.) The diff
-lists the variants whose reports may need review, with
-assertion changes kept apart from ClinVar's own re-annotation. [docs/explainer.md](docs/explainer.md) covers the
-background for readers who do not work with ClinVar.
+from P/LP to VUS. ([clinvar-history](https://github.com/Daneshpajouh/clinvar-history)
+counts 20,364 VUS to conflicting from the monthly `variant_summary` files of 2025-10 and
+2026-10; the files and dates differ.) The diff lists the variants whose reports may need
+review and keeps classification changes apart from changes in other fields.
+[docs/explainer.md](docs/explainer.md) covers the background.
 
 ## Quick start
 
@@ -35,7 +35,7 @@ cd clinvar-delta
 # Annotate two bundled samples: real HG002 records in BRCA1, BRCA2 and TP53, and one synthetic sample
 nextflow run . -profile test --outdir results
 # ...
-# [SUCCESS] completed=18 failed=0 cached=0
+# [SUCCESS] completed=19 failed=0 cached=0
 
 # Compare the bundled cuts of two ClinVar releases
 nextflow run . -profile test_diff --outdir results_diff
@@ -43,18 +43,20 @@ nextflow run . -profile test_diff --outdir results_diff
 ls results/report results_diff/clinvar_diff
 ```
 
-Each run took about 3 s on a clean Debian 12 container and on an Apple M-series Mac,
+Each run took about 4 s on a clean Debian 12 container and on an Apple M-series Mac,
 after Nextflow downloads the nf-schema plugin on first use. `bin/cvnf` runs the Python
 tools from the checkout.
 
 With Docker instead of local tools, add the profile: `-profile test,docker`. The tools
 image `ghcr.io/daneshpajouh/clinvar-delta:1.0.1` is pulled on first use (`make image`
 builds it locally instead). On 2026-10-19 the test profile ran this way from the published
-image in 20 s on the Mac, 19 tasks.
+image in 17 s on the Mac (19 tasks), and test_diff in 8 s (7 tasks). The test profiles
+read `tests/data` by relative path, so run them from the clone root.
 
 ## Real-data results
 
-From the v1.0.0 runs on 2026-10-19 (commands and full tables in [docs/results.md](docs/results.md)):
+From the 2026-10-19 runs, panel annotation on v1.0.0 and the release diff on v1.0.1 (commands
+and full tables in [docs/results.md](docs/results.md)):
 
 | | |
 |---|---|
@@ -74,8 +76,7 @@ From the v1.0.0 runs on 2026-10-19 (commands and full tables in [docs/results.md
 | [results](docs/results.md) | real HG002 and release-diff numbers with the exact commands |
 | [profiling](docs/profiling.md) | before, during and after a run: trace report, calibrated requests, Slurm accounting |
 | [testing](docs/testing.md), [test report](docs/test_report.md) | the four test layers and the v1.0.1 results |
-| [code walk-through](docs/code_walkthrough.md) | a reviewer's tour of the code, with the design decisions |
-| [maintenance SOP](docs/sop.md) | monthly ClinVar update, versioning, deprecations |
+| [maintenance](docs/sop.md) | monthly ClinVar update, versioning, deprecations |
 | [operations notes](docs/operations.md) | failures hit while building this, and their fixes |
 | [data sources](docs/data_sources.md) | every downloaded file with URL, size, SHA-256 and terms |
 
@@ -84,7 +85,7 @@ From the v1.0.0 runs on 2026-10-19 (commands and full tables in [docs/results.md
 ```
 main.nf                 entry: --mode annotate | diff
 workflows/              ANNOTATE and CLINVAR_DIFF
-modules/local/          one process per directory, each with a stub block and versions.yml
+modules/local/          one process per directory, each with a stub block
 conf/                   resource labels, Slurm, calibrated requests, test profiles
 src/cvnf/               Python tools (diff, report, profiling), typed, no dependencies
 bin/cvnf                runs src/cvnf from the checkout when the package is not installed
@@ -93,8 +94,16 @@ containers/             Dockerfile and Apptainer definition for the tools image
 scripts/                data download and test-data builder
 ```
 
-The Snakemake version of this kind of workflow lives in a separate repository; this one
-is Nextflow only.
+## Design choices
+
+- Python with no third-party dependencies: the tools image is the slim Python base plus
+  `procps`. The cost is a hand-written VCF reader, fine for panel-sized files but slow for
+  a whole genome; bcftools normalises and annotates the records.
+- bcftools rather than VEP or SnpEff: ClinVar and gnomAD matching needs exact allele
+  matches after normalisation, which `bcftools annotate` does. Consequence annotation
+  (HGVS, transcript) is not part of 1.0.
+- One container per tool, so bcftools can move to a new BioContainers build without
+  rebuilding the Python image, at the price of two images to pin.
 
 ## Licence and citation
 

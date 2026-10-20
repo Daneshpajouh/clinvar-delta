@@ -11,7 +11,15 @@
 | `--panel` | BED with chrom, start, end, gene symbol |
 
 `scripts/fetch_data.sh DATA_DIR giab clinvar reference panel gnomad` downloads all of
-these for HG002 and the ACMG SF v3.2 panel (1.51 GB) and records provenance.
+these for HG002 and the ACMG SF v3.2 panel (1.51 GB) and records provenance. It needs
+`curl`, `samtools`, `bcftools` and `tabix` on PATH and runs the checkout's `bin/cvnf`.
+
+The samplesheet has one row per sample:
+
+```
+sample,vcf,tbi
+HG002,/path/to/data/giab/HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz,/path/to/data/giab/HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
+```
 
 ```bash
 D=/path/to/data
@@ -30,7 +38,7 @@ nextflow run . -profile docker \
 nextflow run . -profile docker --mode diff \
   --clinvar_old $D/clinvar/clinvar_20251013.vcf.gz --clinvar_old_label clinvar_20251013 \
   --clinvar_new $D/clinvar/clinvar_20261011.vcf.gz --clinvar_new_label clinvar_20261011 \
-  --diff_genes $D/panel/acmg_sf_v3.2.genes.txt --outdir results_diff
+  --diff_genes $D/panel/acmg_sf_genes.txt --outdir results_diff
 ```
 
 Records are matched on ClinVar Variation ID (the VCF ID column), so a variant whose
@@ -54,7 +62,7 @@ it; see ROADMAP.md.
 | Profile | Use |
 |---|---|
 | `standard` | local executor, tools from PATH (bcftools and tabix 1.16 or newer, Python 3.11+, `procps` on Linux), up to 8 CPUs |
-| `docker` | BioContainers bcftools 1.23.1 pinned by digest; tools image `ghcr.io/daneshpajouh/clinvar-delta:1.0.1`, pinned by tag until the first release publishes it (build it locally with `make image`) |
+| `docker` | BioContainers bcftools 1.23.1 pinned by digest; tools image `ghcr.io/daneshpajouh/clinvar-delta:1.0.1`, pulled by version tag (the digest is in the v1.0.1 release notes; `make image` builds it locally) |
 | `apptainer` | same images through Apptainer (definition in `containers/apptainer.def`; not run in this release) |
 | `slurm` | Slurm executor; set `--slurm_queue` and `--slurm_cluster_options` |
 | `calibrated` | per-process requests from measured runs (`conf/calibrated.config`) |
@@ -70,11 +78,12 @@ results/
   cvnf_filter/         <sample>.panel_variants.tsv: every panel variant with its reason
   bcftools_annotate/   <sample>.annotated.vcf.gz (+ .tbi), <sample>.panel.vcf.gz
   bcftools_norm/       normalised VCF and the bcftools norm summary line
-  clinvar_prepare/     ClinVar table used for annotation and normalisation warnings
+  clinvar_prepare/     ClinVar query table and normalisation warnings
   cvnf_validate/       input checks per sample
   clinvar_diff/        diff.{all,panel}.json, diff.*.changes.tsv.gz, clinvar_diff.report.{md,html}
   pipeline_info/       execution_trace.txt, execution_report.html, execution_timeline.html,
-                       pipeline_dag.html, software_versions.yml, run_manifest.json
+                       pipeline_dag.html, software_versions.yml, run_manifest.json,
+                       run_summary.json, outputs.sha256.json
 ```
 
 `run_manifest.json` holds the SHA-256 of every input, all parameters, the git commit and

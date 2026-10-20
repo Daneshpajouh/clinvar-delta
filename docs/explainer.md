@@ -33,8 +33,7 @@ one star by default, and shows the star level next to every result so a reader c
 
 ## What a reclassification means for a patient
 
-Classifications change as evidence accumulates: more families are tested, functional
-studies are published, population databases grow. Between October 2025 and October 2026,
+Classifications change as new family, functional and population data arrive. Between October 2025 and October 2026,
 1,350 variants went from uncertain to pathogenic or likely pathogenic, and 685 went the
 other way. 19,907 uncertain variants became "conflicting", meaning submitters now disagree.
 

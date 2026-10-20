@@ -51,8 +51,8 @@ nf-test 0.9.5; Python 3.13.9; bcftools 1.23.1 (Homebrew and BioContainers).
 - Slurm: no cluster was available. The Slurm profile is untested; the sacct parser is tested
   only on hand-written files in the documented format.
 - Apptainer: not available on macOS; `containers/apptainer.def` has not been built.
-- GitHub Actions: the workflows in `.github/workflows/` have not run, because the
-  repository has not been pushed.
+- GitHub Actions: CI passes on main at `374f9c9`; the release workflow published v1.0.1
+  and the tools image.
 - nf-core compliance: `nf-core pipelines lint --dir .` (nf-core/tools 4.1.0) gives 110
   passed, 13 warnings, 40 failed, 4 ignored. The failures are files and settings of the
   nf-core template that this pipeline does not use (logos, e-mail templates,

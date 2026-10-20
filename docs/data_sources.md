@@ -77,6 +77,6 @@ Read at source on 2026-10-19:
 - gnomAD: primary data are released under CC0 1.0 (gnomad.broadinstitute.org/policies); some annotations bundled with gnomAD, such as SpliceAI scores, carry their own terms. Only AC, AN, AF, nhomalt and AF_grpmax are used here.
 - Ensembl: no restrictions on access to or use of its data; code under Apache 2.0; some third-party data distributed with Ensembl may carry their own constraints (mart.ensembl.org/info/about/legal/disclaimer.html). Only gene coordinates from the REST lookup are used here.
 
-The ClinVar release named in the brief as 2026-10-12 is file `clinvar_20261011.vcf.gz`
+ClinVar's upload of 2026-10-12 is the file `clinvar_20261011.vcf.gz`
 (`##fileDate=2026-10-11`, server timestamp 2026-10-12 22:23 UTC). The older release is
 `clinvar_20251013.vcf.gz`, the archive release closest to 12 months earlier.

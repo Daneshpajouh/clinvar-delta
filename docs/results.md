@@ -9,6 +9,9 @@ the bcftools image digest `sha256:8cf74dd0...3869`, as `run_manifest.json` recor
 
 ```bash
 D=$DATA_DIR   # the directory given to scripts/fetch_data.sh
+mkdir -p $D/runs
+printf 'sample,vcf,tbi\nHG002,%s,%s.tbi\n' $D/giab/HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz{,} \
+  > $D/runs/samplesheet_hg002.csv
 nice -n 10 nextflow run main.nf -profile docker --max_cpus 8 \
   --input $D/runs/samplesheet_hg002.csv --fasta $D/reference/hg38_selected.fa.gz \
   --clinvar $D/clinvar/clinvar_20261011.vcf.gz \
@@ -52,7 +55,7 @@ HG002 variants here.
 nice -n 10 nextflow run main.nf -profile docker --max_cpus 8 --mode diff \
   --clinvar_old $D/clinvar/clinvar_20251013.vcf.gz --clinvar_new $D/clinvar/clinvar_20261011.vcf.gz \
   --clinvar_old_label clinvar_20251013 --clinvar_new_label clinvar_20261011 \
-  --diff_genes $D/panel/acmg_sf_v3.2.genes.txt --outdir $D/runs/clinvar_diff -work-dir $D/runs/work
+  --diff_genes $D/panel/acmg_sf_genes.txt --outdir $D/runs/clinvar_diff -work-dir $D/runs/work
 ```
 
 Wall time 1 min 20 s. Records: 3,878,123 (old) and 4,594,764 (new). The counts below add

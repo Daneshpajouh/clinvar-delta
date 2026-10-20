@@ -3,11 +3,11 @@
 Set up once:
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-pre-commit install
+python3 -m venv .venv && .venv/bin/pip install -e '.[dev]' pre-commit
+.venv/bin/pre-commit install
 ```
 
-Before a pull request, `make check` (ruff, mypy, unit tests, shellcheck) and
+Before a pull request, `make check` (ruff, mypy, unit tests, shellcheck, bats) and
 `make test-pipeline nf-test` must pass. Python follows PEP 8 through ruff with a line
 length of 100.
 
