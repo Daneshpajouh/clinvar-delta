@@ -66,6 +66,9 @@ workflow {
             ['old', params.clinvar_old_label, file(params.clinvar_old), file("${params.clinvar_old}.tbi")],
             ['new', params.clinvar_new_label, file(params.clinvar_new), file("${params.clinvar_new}.tbi")],
         )
+        if (!params.diff_genes) {
+            error("--mode diff needs --diff_genes: a text file with one gene symbol per line")
+        }
         genes = channel.value(file(params.diff_genes))
         CLINVAR_DIFF(releases, genes, cvnf_src)
         versions = CLINVAR_DIFF.out.versions
@@ -75,7 +78,10 @@ workflow {
         inputs = channel.of(file(params.clinvar_old), file(params.clinvar_new), file(params.diff_genes))
     }
 
+    // Each sample's task writes its own versions.yml; compare contents, not paths, so a
+    // process appears once in software_versions.yml however many samples ran.
     versions
+        .map { yml -> yml.text }
         .unique()
         .collectFile(name: 'software_versions.yml', storeDir: "${params.outdir}/pipeline_info", sort: true)
 
@@ -88,10 +94,10 @@ workflow {
 // still leaves a summary next to its trace: status, duration, task counts, the error,
 // and the SHA-256 of each file this run produced.
 def writeRunSummary() {
-    // Written by CVNF_OUTPUT_HASHES from this run's output channels; absent if the run
-    // failed before that step.
+    // Written by CVNF_OUTPUT_HASHES from this run's output channels. After a failure the
+    // file in outdir, if any, is from an earlier run, so it is not reported as this run's.
     def hashes = file("${params.outdir}/pipeline_info/outputs.sha256.json")
-    def outputs = hashes.exists() ? new groovy.json.JsonSlurper().parseText(hashes.text) : [:]
+    def outputs = workflow.success && hashes.exists() ? new groovy.json.JsonSlurper().parseText(hashes.text) : [:]
     def stats = workflow.stats
     def summary = [
         status: workflow.success ? 'success' : 'failed',
