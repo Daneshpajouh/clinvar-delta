@@ -285,7 +285,7 @@ def cmd_report(args: argparse.Namespace) -> int:
             ),
             (
                 "All ClinVar P/LP variants in the panel",
-                [],
+                [] if plp_all else ["None."],
                 (plp_cols, [[r[c] for c in plp_cols] for r in plp_all]) if plp_all else None,
             ),
             (
@@ -355,10 +355,11 @@ def cmd_diff_report(args: argparse.Namespace) -> int:
             (
                 f"{label}: changes",
                 [
-                    "Assertion changes (reclassified, review_changed, term_changed) come from "
-                    "submitters or expert panels. annotation_only means ClinVar changed the "
-                    "location, allele, gene or status wording while the classification and stars "
-                    "stayed the same."
+                    "Classification changes (reclassified, review_changed, term_changed) differ "
+                    "in the group, the review stars or the CLNSIG wording. annotation_only means "
+                    "another compared field changed (location, allele, gene or status wording) "
+                    "while the classification and stars stayed the same. The fields do not show "
+                    "who made a change."
                 ],
                 (["change", "variation IDs"], [[k, v] for k, v in changes.items()]),
             )
@@ -398,13 +399,13 @@ def cmd_diff_report(args: argparse.Namespace) -> int:
         )
         sections.append(
             (
-                f"{label}: assertion versus annotation changes",
+                f"{label}: classification versus annotation changes",
                 [],
                 (
                     ["kind", "variation IDs"],
                     [
                         [
-                            "assertion (reclassified, review_changed, term_changed)",
+                            "classification (reclassified, review_changed, term_changed)",
                             data["assertion_changes"],
                         ],
                         ["annotation only", data["annotation_changes"]],

@@ -10,6 +10,8 @@ None at these thresholds.
 
 ## All ClinVar P/LP variants in the panel
 
+None.
+
 ## P/LP variants by review stars
 
 | stars | P/LP (any) | reportable |

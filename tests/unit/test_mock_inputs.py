@@ -355,3 +355,30 @@ def test_tabix_index_lists_every_contig_with_records() -> None:
     # `tabix -l` on the same files prints these names.
     assert tabix_names(data / "HG002.subset.vcf.gz.tbi") == ["chr13", "chr17"]
     assert tabix_names(data / "SYNTH01.vcf.gz.tbi") == ["chr13"]
+
+
+def test_report_says_none_when_the_panel_has_no_plp(tmp_path: Path) -> None:
+    table = tmp_path / "t.tsv"
+    table.write_text(
+        "sample\tchrom\tpos\tref\talt\tgt\tpanel_gene\tclinvar_id\tclnsig\tgroup\tstars\trevstat"
+        "\tgnomad_af\tlow_penetrance\treportable\treason\n"
+        "S1\tchr1\t100\tA\tG\t0/1\tGENE1\t12345\tBenign\tBLB\t2\t.\t0.3\tno\tno\tnot PLP\n"
+    )
+    md = tmp_path / "r.md"
+    args = ["--summary", str(tmp_path / "r.tsv"), "--json", str(tmp_path / "r.json")]
+    code = run(
+        "report",
+        "--sample",
+        "S1",
+        "--table",
+        str(table),
+        "--panel",
+        str(MOCK / "panel.bed"),
+        *args,
+        "--markdown",
+        str(md),
+        "--html",
+        str(tmp_path / "r.html"),
+    )
+    assert code == 0
+    assert "## All ClinVar P/LP variants in the panel\n\nNone.\n" in md.read_text()

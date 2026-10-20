@@ -88,10 +88,11 @@ def parse_entries(
         )
 
 
-# Assertion changes come from submitters or expert panels and can change what a patient
-# is told. Annotation changes come from ClinVar re-mapping or renaming (new coordinates,
-# allele representation, gene symbols, status labels) while the classification and its
-# review level stay the same.
+# Classification changes (group, review stars or CLNSIG wording) can change what a patient
+# is told. Annotation changes leave the classification and stars alone and differ only in
+# another compared field (coordinates, allele, gene symbols, review-status wording). Only
+# the aggregate VCF fields are compared, so neither label says who made the change; a
+# ClinVar rewording of CLNSIG counts as term_changed.
 ASSERTION_CHANGES = ("reclassified", "review_changed", "term_changed")
 ANNOTATION_CHANGES = ("annotation_only",)
 

@@ -4,7 +4,7 @@ ClinVar clinvar_20251013 compared with clinvar_20261011, matched on Variation ID
 
 ## All records: changes
 
-Assertion changes (reclassified, review_changed, term_changed) come from submitters or expert panels. annotation_only means ClinVar changed the location, allele, gene or status wording while the classification and stars stayed the same.
+Classification changes (reclassified, review_changed, term_changed) differ in the group, the review stars or the CLNSIG wording. annotation_only means another compared field changed (location, allele, gene or status wording) while the classification and stars stayed the same. The fields do not show who made a change.
 
 | change | variation IDs |
 |---|---|
@@ -96,16 +96,16 @@ A variant listed under two genes counts once for each.
 | PTEN | 127 | 38 | 16 |
 | RYR2 | 125 | 5 | 5 |
 
-## All records: assertion versus annotation changes
+## All records: classification versus annotation changes
 
 | kind | variation IDs |
 |---|---|
-| assertion (reclassified, review_changed, term_changed) | 221927 |
+| classification (reclassified, review_changed, term_changed) | 221927 |
 | annotation only | 4427 |
 
 ## Panel genes: changes
 
-Assertion changes (reclassified, review_changed, term_changed) come from submitters or expert panels. annotation_only means ClinVar changed the location, allele, gene or status wording while the classification and stars stayed the same.
+Classification changes (reclassified, review_changed, term_changed) differ in the group, the review stars or the CLNSIG wording. annotation_only means another compared field changed (location, allele, gene or status wording) while the classification and stars stayed the same. The fields do not show who made a change.
 
 | change | variation IDs |
 |---|---|
@@ -186,9 +186,9 @@ A variant listed under two genes counts once for each.
 | GAA | 95 | 9 | 47 |
 | PMS2 | 87 | 3 | 4 |
 
-## Panel genes: assertion versus annotation changes
+## Panel genes: classification versus annotation changes
 
 | kind | variation IDs |
 |---|---|
-| assertion (reclassified, review_changed, term_changed) | 20630 |
+| classification (reclassified, review_changed, term_changed) | 20630 |
 | annotation only | 71 |

@@ -43,13 +43,14 @@ for them and their relatives; a pathogenic result that is downgraded can mean an
 intervention was based on evidence that no longer holds. Labs therefore re-check old
 reports against new ClinVar releases. The diff mode of this pipeline produces that list.
 
-## Assertion changes and annotation changes
+## Classification changes and annotation changes
 
 Not every difference between two releases is a new opinion. Sometimes ClinVar re-maps a
 variant to a corrected position, updates the gene name, or rewords a review status. The
-pipeline labels these `annotation_only` and keeps them apart from changes that come from
-submitters or expert panels (`reclassified`, `review_changed`, `term_changed`). In the real
-comparison, 4,427 records changed only in annotation, against 221,927 assertion changes.
+pipeline labels these `annotation_only` and keeps them apart from changes to the
+classification itself (`reclassified`, `review_changed`, `term_changed`). It compares only
+the aggregate fields, so it does not show who made a change. In the real comparison, 4,427
+records changed only in annotation, against 221,927 classification changes.
 
 ## Population frequency
 
