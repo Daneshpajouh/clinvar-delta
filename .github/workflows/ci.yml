@@ -53,6 +53,8 @@ jobs:
         with:
           version: "0.9.5"
       - run: pip install -e '.[dev]'
+      # bgzip and tabix on the host: one test compresses and indexes its own input VCF
+      - run: sudo apt-get update && sudo apt-get install -y tabix
       - name: Build the tools image used by the docker profile
         run: docker build -f containers/Dockerfile -t ghcr.io/daneshpajouh/clinvar-delta:1.0.1 .
       - name: Pipeline tests (test profile, diff profile, resume, stub run)

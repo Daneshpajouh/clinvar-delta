@@ -216,6 +216,10 @@ def test_resume_reruns_python_steps_after_a_source_change(tmp_path: Path) -> Non
     assert status["ANNOTATE:BCFTOOLS_NORM (HG002)"] == "COMPLETED"
 
 
+@pytest.mark.skipif(
+    shutil.which("bgzip") is None or shutil.which("tabix") is None,
+    reason="needs bgzip and tabix on PATH to build its input",
+)
 def test_annotations_already_in_the_input_are_replaced(tmp_path: Path) -> None:
     # chr13:32315700 G>T is in BRCA2 but in neither the ClinVar nor the gnomAD subset, so
     # every ClinVar and frequency value it carries in here must be gone from the report.
