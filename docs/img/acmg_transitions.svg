@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="658" height="576" viewBox="0 0 658 576" font-family="Helvetica, Arial, sans-serif" font-size="13">
+<title>ACMG SF v3.2 genes: ClinVar 2025-10-13 to 2026-10-11, reclassifications</title>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="120" y="22" font-size="14" font-weight="bold">ACMG SF v3.2 genes: ClinVar 2025-10-13 to 2026-10-11, reclassifications</text>
+<text x="379.0" y="48" text-anchor="middle">new group</text>
+<text x="18" y="314.0" text-anchor="middle" transform="rotate(-90 18 314.0)">old group</text>
+<text x="157.0" y="82" text-anchor="middle">PLP</text>
+<text x="231.0" y="82" text-anchor="middle">VUS</text>
+<text x="305.0" y="82" text-anchor="middle">Conflicting</text>
+<text x="379.0" y="82" text-anchor="middle">BLB</text>
+<text x="453.0" y="82" text-anchor="middle">Other</text>
+<text x="527.0" y="82" text-anchor="middle">None</text>
+<text x="601.0" y="82" text-anchor="middle">Risk allele</text>
+<text x="112" y="133.0" text-anchor="end">PLP</text>
+<rect x="120" y="92" width="74" height="74" fill="#eeeeee" stroke="#c9ced8"/>
+<rect x="194" y="92" width="74" height="74" fill="rgb(148,180,222)" stroke="#c9ced8"/>
+<text x="231.0" y="134.0" text-anchor="middle" fill="#1d2433">69</text>
+<rect x="268" y="92" width="74" height="74" fill="rgb(98,145,208)" stroke="#c9ced8"/>
+<text x="305.0" y="134.0" text-anchor="middle" fill="#ffffff">496</text>
+<rect x="342" y="92" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<rect x="416" y="92" width="74" height="74" fill="rgb(220,230,244)" stroke="#c9ced8"/>
+<text x="453.0" y="134.0" text-anchor="middle" fill="#1d2433">3</text>
+<rect x="490" y="92" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<rect x="564" y="92" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<text x="112" y="207.0" text-anchor="end">VUS</text>
+<rect x="120" y="166" width="74" height="74" fill="rgb(123,163,215)" stroke="#c9ced8"/>
+<text x="157.0" y="208.0" text-anchor="middle" fill="#ffffff">183</text>
+<rect x="194" y="166" width="74" height="74" fill="#eeeeee" stroke="#c9ced8"/>
+<rect x="268" y="166" width="74" height="74" fill="rgb(55,115,195)" stroke="#c9ced8"/>
+<text x="305.0" y="208.0" text-anchor="middle" fill="#ffffff">2,862</text>
+<rect x="342" y="166" width="74" height="74" fill="rgb(122,162,215)" stroke="#c9ced8"/>
+<text x="379.0" y="208.0" text-anchor="middle" fill="#ffffff">195</text>
+<rect x="416" y="166" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<rect x="490" y="166" width="74" height="74" fill="rgb(227,235,246)" stroke="#c9ced8"/>
+<text x="527.0" y="208.0" text-anchor="middle" fill="#1d2433">2</text>
+<rect x="564" y="166" width="74" height="74" fill="rgb(237,242,249)" stroke="#c9ced8"/>
+<text x="601.0" y="208.0" text-anchor="middle" fill="#1d2433">1</text>
+<text x="112" y="281.0" text-anchor="end">Conflicting</text>
+<rect x="120" y="240" width="74" height="74" fill="rgb(111,154,212)" stroke="#c9ced8"/>
+<text x="157.0" y="282.0" text-anchor="middle" fill="#ffffff">297</text>
+<rect x="194" y="240" width="74" height="74" fill="rgb(130,167,217)" stroke="#c9ced8"/>
+<text x="231.0" y="282.0" text-anchor="middle" fill="#ffffff">142</text>
+<rect x="268" y="240" width="74" height="74" fill="#eeeeee" stroke="#c9ced8"/>
+<rect x="342" y="240" width="74" height="74" fill="rgb(107,151,210)" stroke="#c9ced8"/>
+<text x="379.0" y="282.0" text-anchor="middle" fill="#ffffff">352</text>
+<rect x="416" y="240" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<rect x="490" y="240" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<rect x="564" y="240" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<text x="112" y="355.0" text-anchor="end">BLB</text>
+<rect x="120" y="314" width="74" height="74" fill="rgb(227,235,246)" stroke="#c9ced8"/>
+<text x="157.0" y="356.0" text-anchor="middle" fill="#1d2433">2</text>
+<rect x="194" y="314" width="74" height="74" fill="rgb(178,201,232)" stroke="#c9ced8"/>
+<text x="231.0" y="356.0" text-anchor="middle" fill="#1d2433">20</text>
+<rect x="268" y="314" width="74" height="74" fill="rgb(84,135,203)" stroke="#c9ced8"/>
+<text x="305.0" y="356.0" text-anchor="middle" fill="#ffffff">872</text>
+<rect x="342" y="314" width="74" height="74" fill="#eeeeee" stroke="#c9ced8"/>
+<rect x="416" y="314" width="74" height="74" fill="rgb(237,242,249)" stroke="#c9ced8"/>
+<text x="453.0" y="356.0" text-anchor="middle" fill="#1d2433">1</text>
+<rect x="490" y="314" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<rect x="564" y="314" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<text x="112" y="429.0" text-anchor="end">Other</text>
+<rect x="120" y="388" width="74" height="74" fill="rgb(150,181,223)" stroke="#c9ced8"/>
+<text x="157.0" y="430.0" text-anchor="middle" fill="#1d2433">64</text>
+<rect x="194" y="388" width="74" height="74" fill="rgb(182,204,233)" stroke="#c9ced8"/>
+<text x="231.0" y="430.0" text-anchor="middle" fill="#1d2433">17</text>
+<rect x="268" y="388" width="74" height="74" fill="rgb(237,242,249)" stroke="#c9ced8"/>
+<text x="305.0" y="430.0" text-anchor="middle" fill="#1d2433">1</text>
+<rect x="342" y="388" width="74" height="74" fill="rgb(202,218,239)" stroke="#c9ced8"/>
+<text x="379.0" y="430.0" text-anchor="middle" fill="#1d2433">7</text>
+<rect x="416" y="388" width="74" height="74" fill="#eeeeee" stroke="#c9ced8"/>
+<rect x="490" y="388" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<rect x="564" y="388" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<text x="112" y="503.0" text-anchor="end">None</text>
+<rect x="120" y="462" width="74" height="74" fill="rgb(185,206,234)" stroke="#c9ced8"/>
+<text x="157.0" y="504.0" text-anchor="middle" fill="#1d2433">15</text>
+<rect x="194" y="462" width="74" height="74" fill="rgb(168,194,229)" stroke="#c9ced8"/>
+<text x="231.0" y="504.0" text-anchor="middle" fill="#1d2433">30</text>
+<rect x="268" y="462" width="74" height="74" fill="rgb(227,235,246)" stroke="#c9ced8"/>
+<text x="305.0" y="504.0" text-anchor="middle" fill="#1d2433">2</text>
+<rect x="342" y="462" width="74" height="74" fill="rgb(161,189,226)" stroke="#c9ced8"/>
+<text x="379.0" y="504.0" text-anchor="middle" fill="#1d2433">41</text>
+<rect x="416" y="462" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<rect x="490" y="462" width="74" height="74" fill="#eeeeee" stroke="#c9ced8"/>
+<rect x="564" y="462" width="74" height="74" fill="#ffffff" stroke="#c9ced8"/>
+<text x="120" y="564" fill="#4a5163">5,674 variants changed group; grey cells are the same group in both releases</text>
+</svg>

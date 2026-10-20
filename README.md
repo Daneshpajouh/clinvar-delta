@@ -21,6 +21,11 @@ counts 20,364 VUS to conflicting from the monthly `variant_summary` files of 202
 review and keeps classification changes apart from changes in other fields.
 [docs/explainer.md](docs/explainer.md) covers the background.
 
+![Counts of ACMG SF v3.2 variants by ClinVar group in 2025-10-13 (rows) and 2026-10-11 (columns): 2,862 VUS became conflicting, 183 VUS became P/LP, 69 P/LP became VUS](docs/img/acmg_transitions.svg)
+
+Drawn by `scripts/plot_transitions.py` from the committed
+[release-diff report](docs/examples/clinvar_diff_report.md).
+
 ## Quick start
 
 Needs Nextflow 26.04.0 or newer and Java 17 or newer. Without containers, also these tools
